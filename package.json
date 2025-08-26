@@ -1,0 +1,69 @@
+{
+  "name": "custom-speed-video-player",
+  "version": "1.0.0",
+  "description": "A cross-platform video player with custom speed controls",
+  "author": "Custom Speed Video Player Team",
+  "main": "public/electron.js",
+  "homepage": "./",
+  "scripts": {
+    "start": "concurrently \"npm run start:react\" \"wait-on http://localhost:3000 && npm run start:electron\"",
+    "start:react": "react-scripts start",
+    "start:electron": "electron .",
+    "dev": "node scripts/dev.js",
+    "build": "react-scripts build && node scripts/copy-electron.js",
+    "build:electron": "npm run build && electron-builder",
+    "build:prod": "node scripts/build.js",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "dist": "npm run build && electron-builder --publish=never",
+    "dist:win": "npm run build && electron-builder --win",
+    "dist:mac": "npm run build && electron-builder --mac",
+    "dist:linux": "npm run build && electron-builder --linux"
+  },
+  "build": {
+    "appId": "com.customspeedvideoplayer.app",
+    "productName": "Custom Speed Video Player",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "build/**/*"
+    ],
+    "win": {
+      "target": "dir",
+      "sign": false
+    },
+    "forceCodeSigning": false
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1",
+    "concurrently": "^8.2.2",
+    "wait-on": "^7.2.0",
+    "cross-env": "^7.0.3",
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "@mui/material": "^5.14.10",
+    "@mui/icons-material": "^5.14.10",
+    "@mui/lab": "^5.0.0-alpha.145"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.37",
+    "@types/react-dom": "^18.2.15",
+    "electron": "^27.0.0",
+    "electron-builder": "^24.6.4"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
