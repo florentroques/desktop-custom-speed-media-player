@@ -4,7 +4,6 @@ import {
   Slider,
   Typography,
   IconButton,
-  Paper,
   LinearProgress,
 } from "@mui/material";
 import { PlayArrow, Pause, VolumeUp, VolumeOff } from "@mui/icons-material";
@@ -23,6 +22,11 @@ const VideoPlayer = forwardRef(
 
     // Forward the ref
     React.useImperativeHandle(ref, () => videoRef.current);
+
+    // Calculate adjusted duration based on playback rate
+    const adjustedDuration = duration / playbackRate;
+    const adjustedCurrentTime = currentTime / playbackRate;
+    const adjustedTimeRemaining = adjustedDuration - adjustedCurrentTime;
 
     useEffect(() => {
       const video = videoRef.current;
@@ -83,6 +87,19 @@ const VideoPlayer = forwardRef(
     const formatTime = (seconds) => {
       const mins = Math.floor(seconds / 60);
       const secs = Math.floor(seconds % 60);
+      return `${mins}:${secs.toString().padStart(2, "0")}`;
+    };
+
+    const formatTimeWithHours = (seconds) => {
+      const hours = Math.floor(seconds / 3600);
+      const mins = Math.floor((seconds % 3600) / 60);
+      const secs = Math.floor(seconds % 60);
+
+      if (hours > 0) {
+        return `${hours}:${mins.toString().padStart(2, "0")}:${secs
+          .toString()
+          .padStart(2, "0")}`;
+      }
       return `${mins}:${secs.toString().padStart(2, "0")}`;
     };
 
@@ -189,14 +206,30 @@ const VideoPlayer = forwardRef(
                   display: "flex",
                   justifyContent: "space-between",
                   color: "white",
+                  flexWrap: "wrap",
+                  gap: 1,
                 }}
               >
-                <Typography variant="caption">
-                  {formatTime(currentTime)}
-                </Typography>
-                <Typography variant="caption">
-                  {formatTime(duration)}
-                </Typography>
+                <Box>
+                  <Typography variant="caption" display="block">
+                    {formatTime(currentTime)} / {formatTime(duration)}
+                  </Typography>
+                  {playbackRate !== 1 && (
+                    <Typography
+                      variant="caption"
+                      display="block"
+                      sx={{ opacity: 0.8 }}
+                    >
+                      Adjusted: {formatTimeWithHours(adjustedCurrentTime)} /{" "}
+                      {formatTimeWithHours(adjustedDuration)}
+                    </Typography>
+                  )}
+                </Box>
+                {playbackRate !== 1 && (
+                  <Typography variant="caption" sx={{ opacity: 0.8 }}>
+                    -{formatTimeWithHours(adjustedTimeRemaining)}
+                  </Typography>
+                )}
               </Box>
             </Box>
 
