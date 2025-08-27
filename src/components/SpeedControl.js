@@ -32,9 +32,8 @@ const SpeedControl = ({ value, onChange }) => {
   };
 
   const handlePresetClick = (speed) => {
-    onChange(speed);
     setCustomSpeed(speed);
-    handleClose();
+    setTextInputValue(speed.toFixed(2));
   };
 
   const handleCustomSpeedChange = (event, newValue) => {
@@ -145,7 +144,7 @@ const SpeedControl = ({ value, onChange }) => {
                 <Button
                   key={speed}
                   onClick={() => handlePresetClick(speed)}
-                  variant={value === speed ? "contained" : "outlined"}
+                  variant={customSpeed === speed ? "contained" : "outlined"}
                   sx={{ minWidth: 50 }}
                 >
                   {speed}x
