@@ -1,6 +1,6 @@
 {
   "name": "custom-speed-video-player",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "A cross-platform video player with custom speed controls",
   "author": "Custom Speed Video Player Team",
   "main": "public/electron.js",

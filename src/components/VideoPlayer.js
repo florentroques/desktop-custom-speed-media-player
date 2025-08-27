@@ -232,17 +232,12 @@ const VideoPlayer = forwardRef(
                 }}
               >
                 <Typography variant="caption" sx={{ color: "white" }}>
-                  {formatTime(currentTime)} / {formatTime(duration)}
+                  {playbackRate !== 1
+                    ? `${formatTimeWithHours(
+                        adjustedCurrentTime
+                      )} / ${formatTimeWithHours(adjustedDuration)}`
+                    : `${formatTime(currentTime)} / ${formatTime(duration)}`}
                 </Typography>
-                {playbackRate !== 1 && (
-                  <Typography
-                    variant="caption"
-                    sx={{ color: "white", opacity: 0.8 }}
-                  >
-                    {formatTimeWithHours(adjustedCurrentTime)} /{" "}
-                    {formatTimeWithHours(adjustedDuration)}
-                  </Typography>
-                )}
               </Box>
             </Box>
           </Box>
