@@ -187,7 +187,12 @@ function App() {
   return (
     <Box
       ref={containerRef}
-      sx={{ height: "100vh", display: "flex", flexDirection: "column" }}
+      sx={{
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        cursor: isFullscreen ? "none" : "default",
+      }}
     >
       {/* Main Content */}
       <Box
@@ -220,6 +225,7 @@ function App() {
               onPlay={() => setIsPlaying(true)}
               onPause={() => setIsPlaying(false)}
               onEnded={handleVideoEnded}
+              isFullscreen={isFullscreen}
             />
           ) : (
             <Box

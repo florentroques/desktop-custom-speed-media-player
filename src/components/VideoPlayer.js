@@ -9,7 +9,10 @@ import {
 import { PlayArrow, Pause, VolumeUp, VolumeOff } from "@mui/icons-material";
 
 const VideoPlayer = forwardRef(
-  ({ src, volume, playbackRate, onPlay, onPause, onEnded }, ref) => {
+  (
+    { src, volume, playbackRate, onPlay, onPause, onEnded, isFullscreen },
+    ref
+  ) => {
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
@@ -26,7 +29,6 @@ const VideoPlayer = forwardRef(
     // Calculate adjusted duration based on playback rate
     const adjustedDuration = duration / playbackRate;
     const adjustedCurrentTime = currentTime / playbackRate;
-    const adjustedTimeRemaining = adjustedDuration - adjustedCurrentTime;
 
     useEffect(() => {
       const video = videoRef.current;
@@ -153,6 +155,7 @@ const VideoPlayer = forwardRef(
           alignItems: "center",
           justifyContent: "center",
           borderRadius: "inherit",
+          cursor: isFullscreen && !showControls ? "none" : "default",
         }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
