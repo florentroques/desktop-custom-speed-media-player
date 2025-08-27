@@ -135,6 +135,7 @@ const VideoPlayer = forwardRef(
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          borderRadius: "inherit",
         }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
@@ -147,6 +148,7 @@ const VideoPlayer = forwardRef(
             height: "100%",
             objectFit: "contain",
             backgroundColor: "black",
+            borderRadius: "inherit",
           }}
           controls={false}
           preload="metadata"

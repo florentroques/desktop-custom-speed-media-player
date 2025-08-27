@@ -1,21 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import {
   Box,
-  AppBar,
-  Toolbar,
   Typography,
   IconButton,
   Button,
   Slider,
   Paper,
   Grid,
-  Container,
-  Fab,
-  SpeedDial,
-  SpeedDialAction,
-  SpeedDialIcon,
-  Chip,
-  Divider,
   Alert,
   Snackbar,
 } from "@mui/material";
@@ -29,16 +20,10 @@ import {
   VolumeOff,
   Fullscreen,
   FullscreenExit,
-  OpenInNew,
-  Settings,
-  Speed,
   FileOpen,
-  FolderOpen,
 } from "@mui/icons-material";
 import VideoPlayer from "./components/VideoPlayer";
 import SpeedControl from "./components/SpeedControl";
-import Playlist from "./components/Playlist";
-import SettingsDialog from "./components/SettingsDialog";
 
 function App() {
   const [currentVideo, setCurrentVideo] = useState(null);
@@ -49,8 +34,6 @@ function App() {
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
-  const [showPlaylist, setShowPlaylist] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -174,31 +157,6 @@ function App() {
     }
   };
 
-  const handleFolderOpen = async () => {
-    try {
-      const folderPath = await window.electronAPI.openFolderDialog();
-      if (folderPath) {
-        // In a real app, you'd scan the folder for video files
-        setSnackbar({
-          open: true,
-          message: "Folder opened (video scanning not implemented)",
-          severity: "info",
-        });
-      }
-    } catch (error) {
-      setSnackbar({
-        open: true,
-        message: "Error opening folder",
-        severity: "error",
-      });
-    }
-  };
-
-  const handlePlaylistItemClick = (index) => {
-    setCurrentIndex(index);
-    setCurrentVideo(playlist[index]);
-  };
-
   const handleSpeedChange = (newSpeed) => {
     setPlaybackRate(newSpeed);
     if (videoRef.current) {
@@ -221,10 +179,26 @@ function App() {
       sx={{ height: "100vh", display: "flex", flexDirection: "column" }}
     >
       {/* Main Content */}
-      <Box sx={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
+      <Box
+        sx={{
+          flexGrow: 1,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
         {/* Video Player */}
         <Box
-          sx={{ flexGrow: 1, position: "relative", backgroundColor: "black" }}
+          sx={{
+            width: "100%",
+            height: "100%",
+            position: "relative",
+            backgroundColor: "black",
+            borderRadius: 2,
+            overflow: "hidden",
+            boxShadow: 3,
+          }}
         >
           {currentVideo ? (
             <VideoPlayer
@@ -245,6 +219,7 @@ function App() {
                 alignItems: "center",
                 justifyContent: "center",
                 color: "text.secondary",
+                borderRadius: "inherit",
               }}
             >
               <Typography variant="h4" gutterBottom>
@@ -267,7 +242,16 @@ function App() {
 
         {/* Controls */}
         {currentVideo && (
-          <Paper sx={{ p: 2, backgroundColor: "background.paper" }}>
+          <Paper
+            sx={{
+              p: 2,
+              backgroundColor: "background.paper",
+              mt: 2,
+              maxWidth: "1200px",
+              width: "100%",
+              borderRadius: 2,
+            }}
+          >
             <Grid container spacing={2} alignItems="center">
               {/* Playback Controls */}
               <Grid item>
@@ -325,56 +309,10 @@ function App() {
                   {isFullscreen ? <FullscreenExit /> : <Fullscreen />}
                 </IconButton>
               </Grid>
-
-              {/* Settings */}
-              <Grid item>
-                <IconButton onClick={() => setShowSettings(true)}>
-                  <Settings />
-                </IconButton>
-              </Grid>
             </Grid>
           </Paper>
         )}
       </Box>
-
-      {/* Speed Dial */}
-      <SpeedDial
-        ariaLabel="Quick actions"
-        sx={{ position: "absolute", bottom: 16, right: 16 }}
-        icon={<SpeedDialIcon />}
-      >
-        <SpeedDialAction
-          icon={<FileOpen />}
-          tooltipTitle="Open File"
-          onClick={handleFileOpen}
-        />
-        <SpeedDialAction
-          icon={<FolderOpen />}
-          tooltipTitle="Open Folder"
-          onClick={handleFolderOpen}
-        />
-        <SpeedDialAction
-          icon={<Speed />}
-          tooltipTitle="Speed Controls"
-          onClick={() => setShowPlaylist(!showPlaylist)}
-        />
-      </SpeedDial>
-
-      {/* Playlist Panel */}
-      {showPlaylist && (
-        <Playlist
-          playlist={playlist}
-          currentIndex={currentIndex}
-          onItemClick={handlePlaylistItemClick}
-          onClose={() => setShowPlaylist(false)}
-        />
-      )}
-
-      {/* Settings Dialog */}
-      <SettingsDialog
-        open={showSettings}
-        onClose={() => setShowSettings(false)}
-      />
 
       {/* Snackbar */}
       <Snackbar
