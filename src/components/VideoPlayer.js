@@ -201,49 +201,49 @@ const VideoPlayer = forwardRef(
                   },
                 }}
               />
+            </Box>
+
+            {/* Control Buttons and Timing */}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <IconButton onClick={togglePlayPause} sx={{ color: "white" }}>
+                  {isPlaying ? <Pause /> : <PlayArrow />}
+                </IconButton>
+                <IconButton onClick={toggleMute} sx={{ color: "white" }}>
+                  {isMuted ? <VolumeOff /> : <VolumeUp />}
+                </IconButton>
+                <Typography variant="body2" sx={{ color: "white", ml: 2 }}>
+                  {playbackRate}x
+                </Typography>
+              </Box>
+
+              {/* Timing Display */}
               <Box
                 sx={{
                   display: "flex",
-                  justifyContent: "space-between",
-                  color: "white",
-                  flexWrap: "wrap",
-                  gap: 1,
+                  flexDirection: "column",
+                  alignItems: "flex-end",
                 }}
               >
-                <Box>
-                  <Typography variant="caption" display="block">
-                    {formatTime(currentTime)} / {formatTime(duration)}
-                  </Typography>
-                  {playbackRate !== 1 && (
-                    <Typography
-                      variant="caption"
-                      display="block"
-                      sx={{ opacity: 0.8 }}
-                    >
-                      Adjusted: {formatTimeWithHours(adjustedCurrentTime)} /{" "}
-                      {formatTimeWithHours(adjustedDuration)}
-                    </Typography>
-                  )}
-                </Box>
+                <Typography variant="caption" sx={{ color: "white" }}>
+                  {formatTime(currentTime)} / {formatTime(duration)}
+                </Typography>
                 {playbackRate !== 1 && (
-                  <Typography variant="caption" sx={{ opacity: 0.8 }}>
-                    -{formatTimeWithHours(adjustedTimeRemaining)}
+                  <Typography
+                    variant="caption"
+                    sx={{ color: "white", opacity: 0.8 }}
+                  >
+                    {formatTimeWithHours(adjustedCurrentTime)} /{" "}
+                    {formatTimeWithHours(adjustedDuration)}
                   </Typography>
                 )}
               </Box>
-            </Box>
-
-            {/* Control Buttons */}
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <IconButton onClick={togglePlayPause} sx={{ color: "white" }}>
-                {isPlaying ? <Pause /> : <PlayArrow />}
-              </IconButton>
-              <IconButton onClick={toggleMute} sx={{ color: "white" }}>
-                {isMuted ? <VolumeOff /> : <VolumeUp />}
-              </IconButton>
-              <Typography variant="body2" sx={{ color: "white", ml: 2 }}>
-                {playbackRate}x
-              </Typography>
             </Box>
           </Box>
         )}
