@@ -1,6 +1,6 @@
 {
   "name": "custom-speed-video-player",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A cross-platform video player with custom speed controls",
   "author": "Custom Speed Video Player Team",
   "main": "public/electron.js",
@@ -10,7 +10,7 @@
     "start:react": "react-scripts start",
     "start:electron": "electron .",
     "dev": "node scripts/dev.js",
-    "build": "react-scripts build && node scripts/copy-electron.js",
+    "build": "react-scripts build && node scripts/convert-icon.js && node scripts/copy-electron.js",
     "build:electron": "npm run build && electron-builder",
     "build:prod": "node scripts/build.js",
     "test": "react-scripts test",
@@ -29,30 +29,56 @@
     "files": [
       "build/**/*"
     ],
+    "icon": "electron/assets/icon.ico",
     "win": {
-      "target": "dir",
-      "sign": false
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "electron/assets/icon.ico",
+      "requestedExecutionLevel": "asInvoker"
     },
-    "forceCodeSigning": false
+    "mac": {
+      "icon": "electron/assets/icon.ico"
+    },
+    "linux": {
+      "icon": "electron/assets/icon.ico"
+    },
+    "forceCodeSigning": false,
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
   },
   "dependencies": {
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "@mui/icons-material": "^5.14.10",
+    "@mui/lab": "^5.0.0-alpha.145",
+    "@mui/material": "^5.14.10",
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
-    "concurrently": "^8.2.2",
-    "wait-on": "^7.2.0",
-    "cross-env": "^7.0.3",
-    "@emotion/react": "^11.11.1",
-    "@emotion/styled": "^11.11.0",
-    "@mui/material": "^5.14.10",
-    "@mui/icons-material": "^5.14.10",
-    "@mui/lab": "^5.0.0-alpha.145"
+    "wait-on": "^7.2.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.37",
     "@types/react-dom": "^18.2.15",
     "electron": "^27.0.0",
-    "electron-builder": "^24.6.4"
+    "electron-builder": "^24.6.4",
+    "png-to-ico": "^3.0.1"
   },
   "browserslist": {
     "production": [

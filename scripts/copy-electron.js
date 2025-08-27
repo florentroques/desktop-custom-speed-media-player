@@ -34,4 +34,37 @@ if (fs.existsSync(preloadJsPath)) {
   process.exit(1);
 }
 
+// Copy assets folder to build directory
+const assetsDir = path.join(electronDir, "assets");
+const buildAssetsDir = path.join(buildDir, "assets");
+
+if (fs.existsSync(assetsDir)) {
+  // Create assets directory in build if it doesn't exist
+  if (!fs.existsSync(buildAssetsDir)) {
+    fs.mkdirSync(buildAssetsDir, { recursive: true });
+  }
+
+  // Copy all files from assets directory
+  const assetsFiles = fs.readdirSync(assetsDir);
+  assetsFiles.forEach((file) => {
+    const sourcePath = path.join(assetsDir, file);
+    const destPath = path.join(buildAssetsDir, file);
+    fs.copyFileSync(sourcePath, destPath);
+  });
+  console.log("✅ Copied electron/assets to build/assets");
+} else {
+  console.warn("⚠️  electron/assets directory not found");
+}
+
+// Also copy icon.ico to build root for electron-builder
+const iconSourcePath = path.join(electronDir, "assets", "icon.ico");
+const iconDestPath = path.join(buildDir, "icon.ico");
+
+if (fs.existsSync(iconSourcePath)) {
+  fs.copyFileSync(iconSourcePath, iconDestPath);
+  console.log("✅ Copied icon.ico to build root");
+} else {
+  console.warn("⚠️  icon.ico not found in electron/assets");
+}
+
 console.log("✅ Electron files copied successfully!");
