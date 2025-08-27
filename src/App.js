@@ -32,7 +32,9 @@ function App() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(
+    !!document.fullscreenElement
+  );
   const [playbackRate, setPlaybackRate] = useState(1);
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -43,7 +45,7 @@ function App() {
   const videoRef = useRef(null);
   const containerRef = useRef(null);
 
-  // Keyboard shortcuts
+  // Keyboard shortcuts and fullscreen detection
   useEffect(() => {
     const handleKeyPress = (e) => {
       if (e.target.tagName === "INPUT") return;
@@ -82,8 +84,17 @@ function App() {
       }
     };
 
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
     window.addEventListener("keydown", handleKeyPress);
-    return () => window.removeEventListener("keydown", handleKeyPress);
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyPress);
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
   }, [isPlaying, isMuted, volume]);
 
   const togglePlayPause = () => {
