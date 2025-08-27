@@ -220,35 +220,6 @@ function App() {
       ref={containerRef}
       sx={{ height: "100vh", display: "flex", flexDirection: "column" }}
     >
-      {/* Custom Title Bar */}
-      <AppBar position="static" sx={{ WebkitAppRegion: "drag" }}>
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Custom Speed Video Player
-          </Typography>
-          <Box sx={{ WebkitAppRegion: "no-drag" }}>
-            <IconButton
-              color="inherit"
-              onClick={() => window.electronAPI.minimizeWindow()}
-            >
-              <Typography variant="h6">−</Typography>
-            </IconButton>
-            <IconButton
-              color="inherit"
-              onClick={() => window.electronAPI.maximizeWindow()}
-            >
-              <Typography variant="h6">□</Typography>
-            </IconButton>
-            <IconButton
-              color="inherit"
-              onClick={() => window.electronAPI.closeWindow()}
-            >
-              <Typography variant="h6">×</Typography>
-            </IconButton>
-          </Box>
-        </Toolbar>
-      </AppBar>
-
       {/* Main Content */}
       <Box sx={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
         {/* Video Player */}
