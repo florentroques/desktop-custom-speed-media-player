@@ -13,11 +13,11 @@ import {
   Divider,
   TextField,
 } from "@mui/material";
-import { 
-  PlayArrow, 
-  Pause, 
-  VolumeUp, 
-  VolumeOff, 
+import {
+  PlayArrow,
+  Pause,
+  VolumeUp,
+  VolumeOff,
   Stop,
   SkipPrevious,
   SkipNext,
@@ -25,25 +25,25 @@ import {
   FullscreenExit,
   Speed,
   Add,
-  Remove
+  Remove,
 } from "@mui/icons-material";
 
 const VideoPlayer = forwardRef(
   (
-    { 
-      src, 
-      volume, 
-      playbackRate, 
-      onPlay, 
-      onPause, 
-      onEnded, 
+    {
+      src,
+      volume,
+      playbackRate,
+      onPlay,
+      onPause,
+      onEnded,
       isFullscreen,
       onVolumeChange,
       onMuteToggle,
       onPlaybackRateChange,
       onFullscreenToggle,
       onStop,
-      onSkip
+      onSkip,
     },
     ref
   ) => {
@@ -55,7 +55,9 @@ const VideoPlayer = forwardRef(
     const [buffered, setBuffered] = useState(0);
     const [speedAnchorEl, setSpeedAnchorEl] = useState(null);
     const [customSpeed, setCustomSpeed] = useState(playbackRate);
-    const [textInputValue, setTextInputValue] = useState(playbackRate.toFixed(2));
+    const [textInputValue, setTextInputValue] = useState(
+      playbackRate.toFixed(2)
+    );
 
     const videoRef = useRef(null);
     const controlsTimeoutRef = useRef(null);
@@ -259,7 +261,7 @@ const VideoPlayer = forwardRef(
           alignItems: "center",
           justifyContent: "center",
           borderRadius: "inherit",
-          cursor: isFullscreen && !showControls ? "none" : "default",
+          cursor: !showControls ? "none" : "default",
         }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
@@ -296,8 +298,13 @@ const VideoPlayer = forwardRef(
           >
             {/* Progress Bar with Time Labels */}
             <Box sx={{ mb: 2 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
-                <Typography variant="caption" sx={{ color: "white", minWidth: 45 }}>
+              <Box
+                sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}
+              >
+                <Typography
+                  variant="caption"
+                  sx={{ color: "white", minWidth: 45 }}
+                >
                   {playbackRate !== 1
                     ? formatTimeWithHours(adjustedCurrentTime)
                     : formatTime(currentTime)}
@@ -322,7 +329,10 @@ const VideoPlayer = forwardRef(
                     }}
                   />
                 </Box>
-                <Typography variant="caption" sx={{ color: "white", minWidth: 45 }}>
+                <Typography
+                  variant="caption"
+                  sx={{ color: "white", minWidth: 45 }}
+                >
                   {playbackRate !== 1
                     ? formatTimeWithHours(adjustedDuration)
                     : formatTime(duration)}
@@ -346,10 +356,16 @@ const VideoPlayer = forwardRef(
                 <IconButton onClick={onStop} sx={{ color: "white" }}>
                   <Stop />
                 </IconButton>
-                <IconButton onClick={() => onSkip?.(-10)} sx={{ color: "white" }}>
+                <IconButton
+                  onClick={() => onSkip?.(-10)}
+                  sx={{ color: "white" }}
+                >
                   <SkipPrevious />
                 </IconButton>
-                <IconButton onClick={() => onSkip?.(10)} sx={{ color: "white" }}>
+                <IconButton
+                  onClick={() => onSkip?.(10)}
+                  sx={{ color: "white" }}
+                >
                   <SkipNext />
                 </IconButton>
               </Box>
@@ -385,7 +401,11 @@ const VideoPlayer = forwardRef(
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                 {/* Speed Control */}
                 <Tooltip title="Decrease Speed">
-                  <IconButton size="small" onClick={handleSpeedDecrement} sx={{ color: "white" }}>
+                  <IconButton
+                    size="small"
+                    onClick={handleSpeedDecrement}
+                    sx={{ color: "white" }}
+                  >
                     <Remove />
                   </IconButton>
                 </Tooltip>
@@ -395,25 +415,32 @@ const VideoPlayer = forwardRef(
                   size="small"
                   onClick={handleSpeedClick}
                   startIcon={<Speed />}
-                  sx={{ 
+                  sx={{
                     minWidth: 80,
                     color: "white",
                     borderColor: "rgba(255,255,255,0.3)",
                     "&:hover": {
                       borderColor: "rgba(255,255,255,0.5)",
-                    }
+                    },
                   }}
                 >
                   {playbackRate.toFixed(2)}x
                 </Button>
 
                 <Tooltip title="Increase Speed">
-                  <IconButton size="small" onClick={handleSpeedIncrement} sx={{ color: "white" }}>
+                  <IconButton
+                    size="small"
+                    onClick={handleSpeedIncrement}
+                    sx={{ color: "white" }}
+                  >
                     <Add />
                   </IconButton>
                 </Tooltip>
 
-                <IconButton onClick={onFullscreenToggle} sx={{ color: "white" }}>
+                <IconButton
+                  onClick={onFullscreenToggle}
+                  sx={{ color: "white" }}
+                >
                   {isFullscreen ? <FullscreenExit /> : <Fullscreen />}
                 </IconButton>
               </Box>
@@ -452,7 +479,9 @@ const VideoPlayer = forwardRef(
                       <Button
                         key={speed}
                         onClick={() => handlePresetSpeedClick(speed)}
-                        variant={customSpeed === speed ? "contained" : "outlined"}
+                        variant={
+                          customSpeed === speed ? "contained" : "outlined"
+                        }
                         sx={{ minWidth: 50 }}
                       >
                         {speed}x
@@ -468,7 +497,14 @@ const VideoPlayer = forwardRef(
                   <Typography variant="subtitle2" gutterBottom>
                     Custom Speed
                   </Typography>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 2,
+                      mb: 2,
+                    }}
+                  >
                     <TextField
                       size="small"
                       value={textInputValue}
@@ -514,7 +550,9 @@ const VideoPlayer = forwardRef(
                     ]}
                     sx={{ mb: 2 }}
                   />
-                  <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end" }}>
+                  <Box
+                    sx={{ display: "flex", gap: 1, justifyContent: "flex-end" }}
+                  >
                     <Button size="small" onClick={handleSpeedClose}>
                       Cancel
                     </Button>
