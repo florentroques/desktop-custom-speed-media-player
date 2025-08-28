@@ -5,12 +5,46 @@ import {
   Typography,
   IconButton,
   LinearProgress,
+  Button,
+  ButtonGroup,
+  Popover,
+  Paper,
+  Tooltip,
+  Divider,
+  TextField,
 } from "@mui/material";
-import { PlayArrow, Pause, VolumeUp, VolumeOff } from "@mui/icons-material";
+import { 
+  PlayArrow, 
+  Pause, 
+  VolumeUp, 
+  VolumeOff, 
+  Stop,
+  SkipPrevious,
+  SkipNext,
+  Fullscreen,
+  FullscreenExit,
+  Speed,
+  Add,
+  Remove
+} from "@mui/icons-material";
 
 const VideoPlayer = forwardRef(
   (
-    { src, volume, playbackRate, onPlay, onPause, onEnded, isFullscreen },
+    { 
+      src, 
+      volume, 
+      playbackRate, 
+      onPlay, 
+      onPause, 
+      onEnded, 
+      isFullscreen,
+      onVolumeChange,
+      onMuteToggle,
+      onPlaybackRateChange,
+      onFullscreenToggle,
+      onStop,
+      onSkip
+    },
     ref
   ) => {
     const [currentTime, setCurrentTime] = useState(0);
@@ -19,9 +53,14 @@ const VideoPlayer = forwardRef(
     const [isMuted, setIsMuted] = useState(false);
     const [showControls, setShowControls] = useState(false);
     const [buffered, setBuffered] = useState(0);
+    const [speedAnchorEl, setSpeedAnchorEl] = useState(null);
+    const [customSpeed, setCustomSpeed] = useState(playbackRate);
+    const [textInputValue, setTextInputValue] = useState(playbackRate.toFixed(2));
 
     const videoRef = useRef(null);
     const controlsTimeoutRef = useRef(null);
+
+    const presetSpeeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4];
 
     // Forward the ref
     React.useImperativeHandle(ref, () => videoRef.current);
@@ -122,10 +161,73 @@ const VideoPlayer = forwardRef(
     };
 
     const toggleMute = () => {
-      if (videoRef.current) {
-        videoRef.current.muted = !videoRef.current.muted;
-        setIsMuted(!isMuted);
+      onMuteToggle?.();
+    };
+
+    const handleVolumeChange = (event, newValue) => {
+      onVolumeChange?.(newValue);
+    };
+
+    const handleSpeedClick = (event) => {
+      setSpeedAnchorEl(event.currentTarget);
+      setCustomSpeed(playbackRate);
+      setTextInputValue(playbackRate.toFixed(2));
+    };
+
+    const handleSpeedClose = () => {
+      setSpeedAnchorEl(null);
+    };
+
+    const handlePresetSpeedClick = (speed) => {
+      setCustomSpeed(speed);
+      setTextInputValue(speed.toFixed(2));
+    };
+
+    const handleCustomSpeedChange = (event, newValue) => {
+      setCustomSpeed(newValue);
+      setTextInputValue(newValue.toFixed(2));
+    };
+
+    const handleTextInputChange = (event) => {
+      const inputValue = event.target.value;
+      setTextInputValue(inputValue);
+
+      const parsedValue = parseFloat(inputValue);
+      if (!isNaN(parsedValue) && parsedValue >= 0.1 && parsedValue <= 16) {
+        setCustomSpeed(parsedValue);
       }
+    };
+
+    const handleTextInputKeyPress = (event) => {
+      if (event.key === "Enter") {
+        const parsedValue = parseFloat(textInputValue);
+        if (!isNaN(parsedValue) && parsedValue >= 0.1 && parsedValue <= 16) {
+          setCustomSpeed(parsedValue);
+          setTextInputValue(parsedValue.toFixed(2));
+        } else {
+          setTextInputValue(customSpeed.toFixed(2));
+        }
+      }
+    };
+
+    const handleCustomSpeedCommit = () => {
+      const parsedValue = parseFloat(textInputValue);
+      if (!isNaN(parsedValue) && parsedValue >= 0.1 && parsedValue <= 16) {
+        onPlaybackRateChange?.(parsedValue);
+      } else {
+        onPlaybackRateChange?.(customSpeed);
+      }
+      handleSpeedClose();
+    };
+
+    const handleSpeedIncrement = () => {
+      const newSpeed = Math.min(16, playbackRate + 0.25);
+      onPlaybackRateChange?.(newSpeed);
+    };
+
+    const handleSpeedDecrement = () => {
+      const newSpeed = Math.max(0.1, playbackRate - 0.25);
+      onPlaybackRateChange?.(newSpeed);
     };
 
     const handleMouseMove = () => {
@@ -144,6 +246,8 @@ const VideoPlayer = forwardRef(
         clearTimeout(controlsTimeoutRef.current);
       }
     };
+
+    const speedOpen = Boolean(speedAnchorEl);
 
     return (
       <Box
@@ -174,39 +278,59 @@ const VideoPlayer = forwardRef(
           preload="metadata"
         />
 
-        {/* Overlay Controls */}
+        {/* Floating Controls Bar */}
         {showControls && (
           <Box
             sx={{
               position: "absolute",
-              bottom: 0,
-              left: 0,
-              right: 0,
-              background: "linear-gradient(transparent, rgba(0,0,0,0.7))",
+              bottom: 20,
+              left: "50%",
+              transform: "translateX(-50%)",
+              background: "rgba(0, 0, 0, 0.8)",
+              borderRadius: 2,
               p: 2,
+              minWidth: 600,
+              backdropFilter: "blur(10px)",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
             }}
           >
-            {/* Progress Bar */}
+            {/* Progress Bar with Time Labels */}
             <Box sx={{ mb: 2 }}>
-              <Slider
-                value={duration > 0 ? (currentTime / duration) * 100 : 0}
-                onChange={handleSeek}
-                sx={{
-                  color: "primary.main",
-                  "& .MuiSlider-track": {
-                    backgroundColor: "primary.main",
-                  },
-                  "& .MuiSlider-rail": {
-                    backgroundColor: "rgba(255,255,255,0.3)",
-                  },
-                  "& .MuiSlider-thumb": {
-                    backgroundColor: "primary.main",
-                  },
-                }}
-              />
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
+                <Typography variant="caption" sx={{ color: "white", minWidth: 45 }}>
+                  {playbackRate !== 1
+                    ? formatTimeWithHours(adjustedCurrentTime)
+                    : formatTime(currentTime)}
+                </Typography>
+                <Box sx={{ flexGrow: 1 }}>
+                  <Slider
+                    value={duration > 0 ? (currentTime / duration) * 100 : 0}
+                    onChange={handleSeek}
+                    sx={{
+                      color: "primary.main",
+                      "& .MuiSlider-track": {
+                        backgroundColor: "primary.main",
+                      },
+                      "& .MuiSlider-rail": {
+                        backgroundColor: "rgba(255,255,255,0.3)",
+                      },
+                      "& .MuiSlider-thumb": {
+                        backgroundColor: "primary.main",
+                        width: 12,
+                        height: 12,
+                      },
+                    }}
+                  />
+                </Box>
+                <Typography variant="caption" sx={{ color: "white", minWidth: 45 }}>
+                  {playbackRate !== 1
+                    ? formatTimeWithHours(adjustedDuration)
+                    : formatTime(duration)}
+                </Typography>
+              </Box>
             </Box>
 
-            {/* Control Buttons and Timing */}
+            {/* Control Buttons */}
             <Box
               sx={{
                 display: "flex",
@@ -214,35 +338,197 @@ const VideoPlayer = forwardRef(
                 justifyContent: "space-between",
               }}
             >
+              {/* Left side controls */}
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                 <IconButton onClick={togglePlayPause} sx={{ color: "white" }}>
                   {isPlaying ? <Pause /> : <PlayArrow />}
                 </IconButton>
+                <IconButton onClick={onStop} sx={{ color: "white" }}>
+                  <Stop />
+                </IconButton>
+                <IconButton onClick={() => onSkip?.(-10)} sx={{ color: "white" }}>
+                  <SkipPrevious />
+                </IconButton>
+                <IconButton onClick={() => onSkip?.(10)} sx={{ color: "white" }}>
+                  <SkipNext />
+                </IconButton>
+              </Box>
+
+              {/* Center - Volume Control */}
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                 <IconButton onClick={toggleMute} sx={{ color: "white" }}>
                   {isMuted ? <VolumeOff /> : <VolumeUp />}
                 </IconButton>
-                <Typography variant="body2" sx={{ color: "white", ml: 2 }}>
-                  {playbackRate}x
-                </Typography>
+                <Slider
+                  value={isMuted ? 0 : volume}
+                  onChange={handleVolumeChange}
+                  min={0}
+                  max={1}
+                  step={0.1}
+                  sx={{
+                    width: 100,
+                    color: "primary.main",
+                    "& .MuiSlider-track": {
+                      backgroundColor: "primary.main",
+                    },
+                    "& .MuiSlider-rail": {
+                      backgroundColor: "rgba(255,255,255,0.3)",
+                    },
+                    "& .MuiSlider-thumb": {
+                      backgroundColor: "primary.main",
+                    },
+                  }}
+                />
               </Box>
 
-              {/* Timing Display */}
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "flex-end",
-                }}
-              >
-                <Typography variant="caption" sx={{ color: "white" }}>
-                  {playbackRate !== 1
-                    ? `${formatTimeWithHours(
-                        adjustedCurrentTime
-                      )} / ${formatTimeWithHours(adjustedDuration)}`
-                    : `${formatTime(currentTime)} / ${formatTime(duration)}`}
-                </Typography>
+              {/* Right side controls */}
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                {/* Speed Control */}
+                <Tooltip title="Decrease Speed">
+                  <IconButton size="small" onClick={handleSpeedDecrement} sx={{ color: "white" }}>
+                    <Remove />
+                  </IconButton>
+                </Tooltip>
+
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={handleSpeedClick}
+                  startIcon={<Speed />}
+                  sx={{ 
+                    minWidth: 80,
+                    color: "white",
+                    borderColor: "rgba(255,255,255,0.3)",
+                    "&:hover": {
+                      borderColor: "rgba(255,255,255,0.5)",
+                    }
+                  }}
+                >
+                  {playbackRate.toFixed(2)}x
+                </Button>
+
+                <Tooltip title="Increase Speed">
+                  <IconButton size="small" onClick={handleSpeedIncrement} sx={{ color: "white" }}>
+                    <Add />
+                  </IconButton>
+                </Tooltip>
+
+                <IconButton onClick={onFullscreenToggle} sx={{ color: "white" }}>
+                  {isFullscreen ? <FullscreenExit /> : <Fullscreen />}
+                </IconButton>
               </Box>
             </Box>
+
+            {/* Speed Control Popover */}
+            <Popover
+              open={speedOpen}
+              anchorEl={speedAnchorEl}
+              onClose={handleSpeedClose}
+              anchorOrigin={{
+                vertical: "top",
+                horizontal: "center",
+              }}
+              transformOrigin={{
+                vertical: "bottom",
+                horizontal: "center",
+              }}
+            >
+              <Paper sx={{ p: 2, minWidth: 300 }}>
+                <Typography variant="h6" gutterBottom>
+                  Playback Speed
+                </Typography>
+
+                {/* Preset Speeds */}
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Preset Speeds
+                  </Typography>
+                  <ButtonGroup
+                    variant="outlined"
+                    size="small"
+                    sx={{ flexWrap: "wrap" }}
+                  >
+                    {presetSpeeds.map((speed) => (
+                      <Button
+                        key={speed}
+                        onClick={() => handlePresetSpeedClick(speed)}
+                        variant={customSpeed === speed ? "contained" : "outlined"}
+                        sx={{ minWidth: 50 }}
+                      >
+                        {speed}x
+                      </Button>
+                    ))}
+                  </ButtonGroup>
+                </Box>
+
+                <Divider sx={{ my: 2 }} />
+
+                {/* Custom Speed Input */}
+                <Box>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Custom Speed
+                  </Typography>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+                    <TextField
+                      size="small"
+                      value={textInputValue}
+                      onChange={handleTextInputChange}
+                      onKeyPress={handleTextInputKeyPress}
+                      onBlur={() => {
+                        const parsedValue = parseFloat(textInputValue);
+                        if (
+                          !isNaN(parsedValue) &&
+                          parsedValue >= 0.1 &&
+                          parsedValue <= 16
+                        ) {
+                          setTextInputValue(parsedValue.toFixed(2));
+                        } else {
+                          setTextInputValue(customSpeed.toFixed(2));
+                        }
+                      }}
+                      inputProps={{
+                        min: 0.1,
+                        max: 16,
+                        step: 0.01,
+                        style: { textAlign: "center" },
+                      }}
+                      sx={{ width: 80 }}
+                      placeholder="1.00"
+                    />
+                    <Typography variant="body2">x</Typography>
+                  </Box>
+
+                  {/* Custom Speed Slider */}
+                  <Slider
+                    value={customSpeed}
+                    onChange={handleCustomSpeedChange}
+                    min={0.1}
+                    max={16}
+                    step={0.01}
+                    marks={[
+                      { value: 0.1, label: "0.1x" },
+                      { value: 1, label: "1x" },
+                      { value: 5, label: "5x" },
+                      { value: 10, label: "10x" },
+                      { value: 16, label: "16x" },
+                    ]}
+                    sx={{ mb: 2 }}
+                  />
+                  <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end" }}>
+                    <Button size="small" onClick={handleSpeedClose}>
+                      Cancel
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="contained"
+                      onClick={handleCustomSpeedCommit}
+                    >
+                      Apply
+                    </Button>
+                  </Box>
+                </Box>
+              </Paper>
+            </Popover>
           </Box>
         )}
 

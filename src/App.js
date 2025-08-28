@@ -2,28 +2,14 @@ import React, { useState, useRef, useEffect } from "react";
 import {
   Box,
   Typography,
-  IconButton,
   Button,
-  Slider,
-  Paper,
-  Grid,
   Alert,
   Snackbar,
 } from "@mui/material";
 import {
-  PlayArrow,
-  Pause,
-  Stop,
-  SkipPrevious,
-  SkipNext,
-  VolumeUp,
-  VolumeOff,
-  Fullscreen,
-  FullscreenExit,
   FileOpen,
 } from "@mui/icons-material";
 import VideoPlayer from "./components/VideoPlayer";
-import SpeedControl from "./components/SpeedControl";
 
 function App() {
   const [currentVideo, setCurrentVideo] = useState(null);
@@ -226,6 +212,12 @@ function App() {
               onPause={() => setIsPlaying(false)}
               onEnded={handleVideoEnded}
               isFullscreen={isFullscreen}
+              onVolumeChange={setVolume}
+              onMuteToggle={toggleMute}
+              onPlaybackRateChange={handleSpeedChange}
+              onFullscreenToggle={toggleFullscreen}
+              onStop={stopVideo}
+              onSkip={skip}
             />
           ) : (
             <Box
@@ -256,79 +248,6 @@ function App() {
             </Box>
           )}
         </Box>
-
-        {/* Controls */}
-        {currentVideo && (
-          <Paper
-            sx={{
-              p: 2,
-              backgroundColor: "background.paper",
-              mt: 2,
-              maxWidth: "1200px",
-              width: "100%",
-              borderRadius: 2,
-            }}
-          >
-            <Grid container spacing={2} alignItems="center">
-              {/* Playback Controls */}
-              <Grid item>
-                <IconButton onClick={togglePlayPause} size="large">
-                  {isPlaying ? <Pause /> : <PlayArrow />}
-                </IconButton>
-              </Grid>
-              <Grid item>
-                <IconButton onClick={stopVideo}>
-                  <Stop />
-                </IconButton>
-              </Grid>
-              <Grid item>
-                <IconButton onClick={() => skip(-10)}>
-                  <SkipPrevious />
-                </IconButton>
-              </Grid>
-              <Grid item>
-                <IconButton onClick={() => skip(10)}>
-                  <SkipNext />
-                </IconButton>
-              </Grid>
-
-              {/* Volume Control */}
-              <Grid item xs={2}>
-                <Box sx={{ display: "flex", alignItems: "center" }}>
-                  <IconButton onClick={toggleMute}>
-                    {isMuted ? <VolumeOff /> : <VolumeUp />}
-                  </IconButton>
-                  <Slider
-                    value={isMuted ? 0 : volume}
-                    onChange={(e, value) => {
-                      setVolume(value);
-                      setIsMuted(value === 0);
-                    }}
-                    min={0}
-                    max={1}
-                    step={0.1}
-                    sx={{ ml: 1 }}
-                  />
-                </Box>
-              </Grid>
-
-              {/* Speed Control */}
-              <Grid item xs={2}>
-                <SpeedControl
-                  value={playbackRate}
-                  onChange={handleSpeedChange}
-                />
-              </Grid>
-
-              {/* Fullscreen */}
-              <Grid item>
-                <IconButton onClick={toggleFullscreen}>
-                  {isFullscreen ? <FullscreenExit /> : <Fullscreen />}
-                </IconButton>
-              </Grid>
-            </Grid>
-          </Paper>
-        )}
       </Box>
 
       {/* Snackbar */}
