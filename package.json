@@ -1,6 +1,6 @@
 {
   "name": "custom-speed-video-player",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "A cross-platform video player with custom speed controls",
   "author": "Custom Speed Video Player Team",
   "main": "public/electron.js",
@@ -49,7 +49,7 @@
       "requestedExecutionLevel": "asInvoker"
     },
     "mac": {
-      "icon": "electron/assets/icon.ico"
+      "icon": "electron/assets/icon.png"
     },
     "linux": {
       "icon": "electron/assets/icon.ico"
@@ -64,10 +64,8 @@
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.14.10",
-    "@mui/lab": "^5.0.0-alpha.145",
     "@mui/material": "^5.14.10",
     "concurrently": "^8.2.2",
-    "cross-env": "^7.0.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
@@ -78,7 +76,7 @@
     "@types/react-dom": "^18.2.15",
     "electron": "^27.0.0",
     "electron-builder": "^24.6.4",
-    "png-to-ico": "^3.0.1"
+    "png2icons": "^2.0.1"
   },
   "browserslist": {
     "production": [
