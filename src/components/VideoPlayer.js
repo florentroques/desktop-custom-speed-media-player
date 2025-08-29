@@ -298,18 +298,16 @@ const VideoPlayer = forwardRef(
           >
             {/* Progress Bar with Time Labels */}
             <Box sx={{ mb: 2 }}>
-              <Box
-                sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}
-              >
+              <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
                 <Typography
                   variant="caption"
-                  sx={{ color: "white", minWidth: 45 }}
+                  sx={{ color: "white", minWidth: 45, ml: 1.5 }}
                 >
                   {playbackRate !== 1
                     ? formatTimeWithHours(adjustedCurrentTime)
                     : formatTime(currentTime)}
                 </Typography>
-                <Box sx={{ flexGrow: 1 }}>
+                <Box sx={{ flexGrow: 1, mx: 2 }}>
                   <Slider
                     value={duration > 0 ? (currentTime / duration) * 100 : 0}
                     onChange={handleSeek}
@@ -331,7 +329,7 @@ const VideoPlayer = forwardRef(
                 </Box>
                 <Typography
                   variant="caption"
-                  sx={{ color: "white", minWidth: 45 }}
+                  sx={{ color: "white", minWidth: 45, mr: 0.5 }}
                 >
                   {playbackRate !== 1
                     ? formatTimeWithHours(adjustedDuration)
