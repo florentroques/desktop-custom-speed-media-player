@@ -176,17 +176,6 @@ npm run setup-associations-windows  # Setup file associations
 - Use supported video formats for optimal playback
 - Close other applications to free up system resources
 
-## 📋 Roadmap
-
-- [ ] Subtitle support
-- [ ] Video effects and filters
-- [ ] Screenshot capture
-- [ ] Video trimming
-- [ ] Multiple audio track support
-- [ ] Network streaming support
-- [ ] Plugin system
-- [ ] Cloud storage integration
-
 ## 🤝 Contributing
 
 1. Fork the repository
