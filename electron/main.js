@@ -10,6 +10,27 @@ const path = require("path");
 const isDev = process.env.NODE_ENV === "development";
 
 let mainWindow;
+let initialVideoPath = null;
+
+// Handle command line arguments for file opening
+function handleCommandLineArguments() {
+  const args = process.argv.slice(1);
+  for (const arg of args) {
+    if (
+      arg.endsWith(".mp4") ||
+      arg.endsWith(".avi") ||
+      arg.endsWith(".mkv") ||
+      arg.endsWith(".mov") ||
+      arg.endsWith(".wmv") ||
+      arg.endsWith(".flv") ||
+      arg.endsWith(".webm") ||
+      arg.endsWith(".m4v")
+    ) {
+      initialVideoPath = arg;
+      break;
+    }
+  }
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -48,11 +69,21 @@ function createWindow() {
   });
 }
 
-app.whenReady().then(() => {
-  // Remove the default menu
-  Menu.setApplicationMenu(null);
-  createWindow();
-});
+// Make the app a single instance app
+const gotTheLock = app.requestSingleInstanceLock();
+
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.whenReady().then(() => {
+    // Handle command line arguments
+    handleCommandLineArguments();
+
+    // Remove the default menu
+    Menu.setApplicationMenu(null);
+    createWindow();
+  });
+}
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
@@ -63,6 +94,33 @@ app.on("window-all-closed", () => {
 app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
+  }
+});
+
+// Handle second instance (when app is already running and user opens a file)
+app.on("second-instance", (event, commandLine, workingDirectory) => {
+  // Someone tried to run a second instance, we should focus our window instead
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.focus();
+
+    // Check if a video file was passed as argument
+    const videoPath = commandLine.find(
+      (arg) =>
+        arg.endsWith(".mp4") ||
+        arg.endsWith(".avi") ||
+        arg.endsWith(".mkv") ||
+        arg.endsWith(".mov") ||
+        arg.endsWith(".wmv") ||
+        arg.endsWith(".flv") ||
+        arg.endsWith(".webm") ||
+        arg.endsWith(".m4v")
+    );
+
+    if (videoPath) {
+      // Send the video path to the renderer process
+      mainWindow.webContents.send("open-video-file", videoPath);
+    }
   }
 });
 
@@ -111,4 +169,9 @@ ipcMain.handle("maximize-window", () => {
 
 ipcMain.handle("close-window", () => {
   mainWindow.close();
+});
+
+// Get initial video path from command line arguments
+ipcMain.handle("get-initial-video-path", () => {
+  return initialVideoPath;
 });

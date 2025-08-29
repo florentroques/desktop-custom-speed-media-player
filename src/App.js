@@ -1,14 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-import {
-  Box,
-  Typography,
-  Button,
-  Alert,
-  Snackbar,
-} from "@mui/material";
-import {
-  FileOpen,
-} from "@mui/icons-material";
+import { Box, Typography, Button, Alert, Snackbar } from "@mui/material";
+import { FileOpen } from "@mui/icons-material";
 import VideoPlayer from "./components/VideoPlayer";
 
 function App() {
@@ -30,6 +22,49 @@ function App() {
 
   const videoRef = useRef(null);
   const containerRef = useRef(null);
+
+  // Check for initial video path from command line arguments
+  useEffect(() => {
+    const checkInitialVideo = async () => {
+      try {
+        const initialPath = await window.electronAPI.getInitialVideoPath();
+        if (initialPath) {
+          setCurrentVideo(initialPath);
+          setPlaylist([initialPath]);
+          setCurrentIndex(0);
+          setSnackbar({
+            open: true,
+            message: "Video loaded from command line",
+            severity: "success",
+          });
+        }
+      } catch (error) {
+        console.error("Error getting initial video path:", error);
+      }
+    };
+
+    checkInitialVideo();
+  }, []);
+
+  // Listen for video file opened events (when app is already running)
+  useEffect(() => {
+    const handleVideoFileOpened = (event) => {
+      const videoPath = event.detail;
+      setCurrentVideo(videoPath);
+      setPlaylist([videoPath]);
+      setCurrentIndex(0);
+      setSnackbar({
+        open: true,
+        message: "Video loaded from file association",
+        severity: "success",
+      });
+    };
+
+    window.addEventListener("video-file-opened", handleVideoFileOpened);
+    return () => {
+      window.removeEventListener("video-file-opened", handleVideoFileOpened);
+    };
+  }, []);
 
   // Keyboard shortcuts and fullscreen detection
   useEffect(() => {
