@@ -1,47 +1,32 @@
 # Custom Speed Video Player
 
-A cross-platform native desktop video player application built with Electron and React, featuring advanced custom speed controls and a modern user interface.
+A modern, cross-platform desktop video player built with Electron and React, featuring advanced custom speed controls and a sleek user interface.
 
-## Features
+## ✨ Features
 
 ### 🎬 Video Playback
 
-- Support for multiple video formats (MP4, AVI, MKV, MOV, WMV, FLV, WebM, M4V)
-- Custom video controls with progress bar
-- Fullscreen mode support
-- Hardware acceleration support
+- **Multiple Formats**: MP4, AVI, MKV, MOV, WMV, FLV, WebM, M4V
+- **Hardware Acceleration**: Optimized performance with GPU support
+- **Fullscreen Mode**: Immersive viewing experience
+- **Custom Controls**: Intuitive video controls with progress tracking
 
-### ⚡ Custom Speed Controls
+### ⚡ Advanced Speed Controls
 
-- **Preset speeds**: 0.25x, 0.5x, 0.75x, 1x, 1.25x, 1.5x, 2x, 3x, 4x
-- **Custom speed slider**: Fine-tune playback speed from 0.1x to 16x
-- **Quick increment/decrement**: Adjust speed by 0.25x increments
-- **Real-time speed display**: Shows current playback speed
+- **Preset Speeds**: 0.25x, 0.5x, 0.75x, 1x, 1.25x, 1.5x, 2x, 3x, 4x
+- **Custom Speed Slider**: Fine-tune from 0.1x to 16x
+- **Quick Adjustments**: +/- buttons for 0.25x increments
+- **Real-time Display**: Shows current playback speed
 
-### 🎛️ Advanced Controls
+### 🎛️ User Experience
 
-- Volume control with mute toggle
-- Keyboard shortcuts for quick access
-- Playlist management
-- Settings dialog with comprehensive options
-- Custom title bar with window controls
+- **Keyboard Shortcuts**: Space (play/pause), F (fullscreen), M (mute), arrows (skip/volume)
+- **Volume Control**: Slider with mute toggle
+- **Playlist Support**: Queue multiple videos
+- **Modern UI**: Dark theme with Material-UI components
+- **File Association**: Set as default video player (Windows)
 
-### ⌨️ Keyboard Shortcuts
-
-- **Space**: Play/Pause
-- **F**: Toggle fullscreen
-- **M**: Toggle mute
-- **←/→**: Skip 10 seconds backward/forward
-- **↑/↓**: Increase/decrease volume
-
-### 🎨 Modern UI
-
-- Dark theme with Material-UI components
-- Responsive design
-- Smooth animations and transitions
-- Intuitive user interface
-
-## Installation
+## 🚀 Quick Start
 
 ### Prerequisites
 
@@ -50,152 +35,148 @@ A cross-platform native desktop video player application built with Electron and
 
 ### Development Setup
 
-1. **Clone the repository**
+```bash
+# Clone the repository
+git clone <repository-url>
+cd custom-speed-video-player
 
-   ```bash
-   git clone <repository-url>
-   cd custom-speed-video-player
-   ```
+# Install dependencies
+npm install
 
-2. **Install dependencies**
-
-   ```bash
-   npm install
-   ```
-
-3. **Start the development server**
-   ```bash
-   npm start
-   ```
-
-This will start both the React development server and the Electron application.
+# Start development server
+npm start
+```
 
 ### Building for Production
 
-#### Build for all platforms
-
 ```bash
+# Build for all platforms
 npm run dist
+
+# Build for specific platform
+npm run dist:win    # Windows
+npm run dist:mac    # macOS
+npm run dist:linux  # Linux
 ```
 
-#### Build for specific platforms
-
-```bash
-# Windows
-npm run dist:win
-
-# macOS
-npm run dist:mac
-
-# Linux
-npm run dist:linux
-```
-
-The built applications will be available in the `dist` folder.
-
-## Usage
+## 📖 Usage
 
 ### Opening Videos
 
-1. Click the "Open Video File" button or use the speed dial menu
+1. Click "Open Video File" button
 2. Select a video file from your computer
 3. The video will load and start playing
 
-### Adjusting Playback Speed
+### File Association (Windows)
 
-1. **Using preset buttons**: Click the speed control button to open the speed menu
-2. **Using the slider**: Drag the custom speed slider for precise control
-3. **Using increment buttons**: Click the +/- buttons for quick adjustments
-4. **Keyboard shortcuts**: Use the speed dial menu for quick access
+Set the app as your default video player to double-click any video file:
 
-### Managing Playlist
+#### Automatic Setup
 
-1. Open the playlist panel using the speed dial menu
-2. Click on any video in the playlist to switch to it
-3. Videos will automatically advance to the next in the playlist
+File associations are automatically registered during installation for common video formats.
 
-### Settings
+#### Manual Setup
 
-1. Click the settings icon in the control bar
-2. Adjust various settings including:
-   - Default volume and speed
-   - Auto-play behavior
-   - Subtitle preferences
-   - Performance options
-   - Application behavior
+```bash
+# Run setup script (requires admin privileges)
+npm run setup-associations-windows
+```
 
-## Project Structure
+#### Alternative Methods
+
+- **Windows Settings**: Right-click video file → "Open with" → "Choose another app" → Select "Custom Speed Video Player"
+- **Command Prompt** (admin):
+  ```cmd
+  assoc .mp4=CustomSpeedVideoPlayer.mp4
+  ftype CustomSpeedVideoPlayer.mp4="C:\path\to\Custom Speed Video Player.exe" "%1"
+  ```
+
+### Speed Controls
+
+- **Preset Buttons**: Click speed control button for preset options
+- **Custom Slider**: Drag for precise speed control (0.1x - 16x)
+- **Quick Buttons**: Use +/- buttons for 0.25x increments
+- **Keyboard**: Access speed menu for quick changes
+
+### Keyboard Shortcuts
+
+| Key     | Action            |
+| ------- | ----------------- |
+| `Space` | Play/Pause        |
+| `F`     | Toggle Fullscreen |
+| `M`     | Toggle Mute       |
+| `←/→`   | Skip 10 seconds   |
+| `↑/↓`   | Volume up/down    |
+
+## 🏗️ Project Structure
 
 ```
 custom-speed-video-player/
 ├── electron/                 # Electron main process
 │   ├── main.js              # Main process entry point
-│   └── preload.js           # Preload script for secure IPC
-├── public/                  # Static assets
-│   └── index.html           # Main HTML file
+│   ├── preload.js           # Preload script for IPC
+│   └── assets/              # Icons and assets
 ├── src/                     # React application
 │   ├── components/          # React components
-│   │   ├── VideoPlayer.js   # Video player component
-│   │   ├── SpeedControl.js  # Speed control component
-│   │   ├── Playlist.js      # Playlist management
-│   │   └── SettingsDialog.js # Settings dialog
-│   ├── App.js               # Main application component
-│   └── index.js             # React entry point
-├── package.json             # Project configuration
-└── README.md               # This file
+│   │   └── VideoPlayer.js   # Main video player component
+│   └── App.js               # Main application component
+├── scripts/                 # Build and utility scripts
+│   ├── setup-file-associations-windows.js
+│   └── ...
+├── public/                  # Static assets
+└── dist/                    # Built applications
 ```
 
-## Technology Stack
-
-- **Electron**: Cross-platform desktop application framework
-- **React**: User interface library
-- **Material-UI**: Component library for modern UI
-- **HTML5 Video API**: Native video playback capabilities
-
-## Development
+## 🛠️ Development
 
 ### Available Scripts
 
-- `npm start`: Start development server
-- `npm run build`: Build React application
-- `npm run test`: Run tests
-- `npm run dist`: Build for distribution
-- `npm run eject`: Eject from Create React App
+```bash
+npm start                    # Start development server
+npm run build               # Build React application
+npm run dist                # Build for distribution
+npm run dist:win            # Build Windows executable
+npm run setup-associations-windows  # Setup file associations
+```
 
-### Code Style
+### Technology Stack
 
-- Follow React best practices
-- Use functional components with hooks
-- Implement proper error handling
-- Add comments for complex logic
+- **Electron**: Cross-platform desktop framework
+- **React**: User interface library
+- **Material-UI**: Component library
+- **HTML5 Video API**: Native video playback
 
-## Contributing
+## 🌍 Cross-Platform Support
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+### Windows
 
-## License
+- ✅ File association setup
+- ✅ Single instance application
+- ✅ Command line support
+- ✅ Drag & drop support
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+### macOS & Linux
 
-## Troubleshooting
+- ✅ Command line arguments
+- ✅ Drag & drop support
+- ⚠️ Manual file association setup required
+
+## 🔧 Troubleshooting
 
 ### Common Issues
 
-1. **Video not playing**: Ensure the video format is supported by your browser
-2. **Speed controls not working**: Check that the video element is properly loaded
-3. **Build errors**: Make sure all dependencies are installed correctly
+1. **Video not playing**: Ensure format is supported (MP4, AVI, MKV, etc.)
+2. **Speed controls not working**: Check video element is properly loaded
+3. **File associations not working**: Run setup script with admin privileges
+4. **Build errors**: Ensure all dependencies are installed
 
 ### Performance Tips
 
-- Enable hardware acceleration in settings for better performance
+- Enable hardware acceleration for better performance
 - Use supported video formats for optimal playback
 - Close other applications to free up system resources
 
-## Roadmap
+## 📋 Roadmap
 
 - [ ] Subtitle support
 - [ ] Video effects and filters
@@ -206,6 +187,18 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - [ ] Plugin system
 - [ ] Cloud storage integration
 
-## Support
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 💬 Support
 
 For support and questions, please open an issue on the GitHub repository.
