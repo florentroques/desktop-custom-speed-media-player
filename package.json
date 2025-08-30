@@ -1,6 +1,6 @@
 {
   "name": "custom-speed-video-player",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "description": "A cross-platform video player with custom speed controls",
   "author": "Custom Speed Video Player Team",
   "main": "public/electron.js",
@@ -18,8 +18,7 @@
     "dist": "npm run build && electron-builder --publish=never",
     "dist:win": "npm run build && electron-builder --win",
     "dist:mac": "npm run build && electron-builder --mac",
-    "dist:linux": "npm run build && electron-builder --linux",
-    "setup-associations-windows": "node scripts/setup-file-associations-windows.js"
+    "dist:linux": "npm run build && electron-builder --linux"
   },
   "build": {
     "appId": "com.customspeedvideoplayer.app",
@@ -100,7 +99,82 @@
       ]
     },
     "mac": {
-      "icon": "electron/assets/icon.png"
+      "icon": "electron/assets/icon.png",
+      "category": "public.app-category.video",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "fileAssociations": [
+        {
+          "ext": "mp4",
+          "name": "MP4 Video",
+          "description": "MP4 Video File",
+          "icon": "electron/assets/icon.png",
+          "role": "Viewer"
+        },
+        {
+          "ext": "avi",
+          "name": "AVI Video",
+          "description": "AVI Video File",
+          "icon": "electron/assets/icon.png",
+          "role": "Viewer"
+        },
+        {
+          "ext": "mkv",
+          "name": "MKV Video",
+          "description": "MKV Video File",
+          "icon": "electron/assets/icon.png",
+          "role": "Viewer"
+        },
+        {
+          "ext": "mov",
+          "name": "MOV Video",
+          "description": "MOV Video File",
+          "icon": "electron/assets/icon.png",
+          "role": "Viewer"
+        },
+        {
+          "ext": "wmv",
+          "name": "WMV Video",
+          "description": "WMV Video File",
+          "icon": "electron/assets/icon.png",
+          "role": "Viewer"
+        },
+        {
+          "ext": "flv",
+          "name": "FLV Video",
+          "description": "FLV Video File",
+          "icon": "electron/assets/icon.png",
+          "role": "Viewer"
+        },
+        {
+          "ext": "webm",
+          "name": "WebM Video",
+          "description": "WebM Video File",
+          "icon": "electron/assets/icon.png",
+          "role": "Viewer"
+        },
+        {
+          "ext": "m4v",
+          "name": "M4V Video",
+          "description": "M4V Video File",
+          "icon": "electron/assets/icon.png",
+          "role": "Viewer"
+        }
+      ]
     },
     "linux": {
       "icon": "electron/assets/icon.ico"

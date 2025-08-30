@@ -67,22 +67,24 @@ npm run dist:linux  # Linux
 2. Select a video file from your computer
 3. The video will load and start playing
 
-### File Association (Windows)
+### File Association
 
 Set the app as your default video player to double-click any video file:
 
-#### Automatic Setup
+#### Windows
+
+##### Automatic Setup
 
 File associations are automatically registered during installation for common video formats.
 
-#### Manual Setup
+##### Manual Setup
 
 ```bash
 # Run setup script (requires admin privileges)
 npm run setup-associations-windows
 ```
 
-#### Alternative Methods
+##### Alternative Methods
 
 - **Windows Settings**: Right-click video file → "Open with" → "Choose another app" → Select "Custom Speed Video Player"
 - **Command Prompt** (admin):
@@ -90,6 +92,59 @@ npm run setup-associations-windows
   assoc .mp4=CustomSpeedVideoPlayer.mp4
   ftype CustomSpeedVideoPlayer.mp4="C:\path\to\Custom Speed Video Player.exe" "%1"
   ```
+
+#### macOS
+
+##### Prerequisites
+
+Install `duti` (a command-line tool for managing file associations):
+
+```bash
+# Using Homebrew
+brew install duti
+
+# Or download from: https://github.com/moretension/duti
+```
+
+##### Setup File Associations
+
+1. **Build the app first**:
+   ```bash
+   npm run dist:mac
+   ```
+
+2. **Run the setup script**:
+   ```bash
+   npm run setup-associations-mac
+   ```
+
+3. **Restart Finder** (optional but recommended):
+   ```bash
+   killall Finder
+   ```
+
+##### Manual Setup
+
+If the automatic setup doesn't work, you can manually set associations:
+
+1. Right-click on a video file in Finder
+2. Select "Get Info"
+3. Under "Open with", select "Custom Speed Video Player"
+4. Click "Change All..." to apply to all files of this type
+5. Repeat for other video formats (MP4, AVI, MKV, etc.)
+
+##### Verify Associations
+
+Check if associations are working:
+```bash
+# Run the test script
+npm run test-associations-mac
+
+# Or manually check
+duti -x .mp4
+```
+
+This should show "Custom Speed Video Player" as the default app.
 
 ### Speed Controls
 
@@ -136,7 +191,10 @@ npm start                    # Start development server
 npm run build               # Build React application
 npm run dist                # Build for distribution
 npm run dist:win            # Build Windows executable
-npm run setup-associations-windows  # Setup file associations
+npm run dist:mac            # Build macOS application
+npm run setup-associations-windows  # Setup file associations (Windows)
+npm run setup-associations-mac      # Setup file associations (macOS)
+npm run test-associations-mac       # Test file associations (macOS)
 ```
 
 ### Technology Stack
@@ -155,7 +213,15 @@ npm run setup-associations-windows  # Setup file associations
 - ✅ Command line support
 - ✅ Drag & drop support
 
-### macOS & Linux
+### macOS
+
+- ✅ File association setup (with duti)
+- ✅ Single instance application
+- ✅ Command line support
+- ✅ Drag & drop support
+- ✅ Native macOS integration
+
+### Linux
 
 - ✅ Command line arguments
 - ✅ Drag & drop support
@@ -169,6 +235,23 @@ npm run setup-associations-windows  # Setup file associations
 2. **Speed controls not working**: Check video element is properly loaded
 3. **File associations not working**: Run setup script with admin privileges
 4. **Build errors**: Ensure all dependencies are installed
+
+### macOS-Specific Issues
+
+1. **File associations not working after setup**:
+   - Restart Finder: `killall Finder`
+   - Log out and back in
+   - Check if `duti` is installed: `which duti`
+   - Verify associations: `duti -x .mp4`
+
+2. **App not opening files**:
+   - Ensure the app is built: `npm run dist:mac`
+   - Check app bundle exists: `ls -la dist/mac/`
+   - Try manual association in Finder
+
+3. **Permission issues**:
+   - Grant necessary permissions in System Preferences → Security & Privacy
+   - Allow the app to control your computer if prompted
 
 ### Performance Tips
 
