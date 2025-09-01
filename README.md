@@ -1,4 +1,4 @@
-# Custom Speed Video Player
+# Desktop Custom Speed Video Player
 
 A modern, cross-platform desktop video player built with Electron and React, featuring advanced custom speed controls and a sleek user interface.
 
