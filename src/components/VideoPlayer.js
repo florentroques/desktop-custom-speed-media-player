@@ -296,11 +296,7 @@ const VideoPlayer = forwardRef(
         totalSeconds = timeParts[0] * 3600 + timeParts[1] * 60 + timeParts[2];
       }
 
-      if (
-        !isNaN(totalSeconds) &&
-        totalSeconds > 0 &&
-        totalSeconds <= duration
-      ) {
+      if (!isNaN(totalSeconds) && totalSeconds > 0) {
         setDurationInputTime(totalSeconds);
         // Calculate required speed to reach this time
         const requiredSpeed = duration / totalSeconds;
@@ -570,7 +566,7 @@ const VideoPlayer = forwardRef(
               disableEnforceFocus
               disableRestoreFocus
             >
-              <Paper sx={{ p: 2, minWidth: 300 }}>
+              <Paper sx={{ p: 2, minWidth: 600 }}>
                 <Typography variant="h6" gutterBottom>
                   Playback Speed
                 </Typography>
@@ -680,9 +676,10 @@ const VideoPlayer = forwardRef(
                             style: { textAlign: "center" },
                           }}
                           sx={{ width: 240 }}
+                          helperText="Longer duration = slower playback"
                         />
-                        <Typography variant="body2" sx={{ width: 120 }}>
-                          (Current: {Math.floor(duration / 60)}:
+                        <Typography variant="body2" sx={{ width: 200 }}>
+                          (Original Duration: {Math.floor(duration / 60)}:
                           {(duration % 60).toFixed(0).padStart(2, "0")})
                         </Typography>
                       </Box>
