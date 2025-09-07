@@ -60,6 +60,7 @@ const VideoPlayer = forwardRef(
     );
     const [durationInputValue, setDurationInputValue] = useState("");
     const [durationInputTime, setDurationInputTime] = useState(0);
+    const [isInteractingWithInputs, setIsInteractingWithInputs] = useState(false);
 
     const videoRef = useRef(null);
     const controlsTimeoutRef = useRef(null);
@@ -180,8 +181,15 @@ const VideoPlayer = forwardRef(
       setDurationInputTime(0);
     };
 
-    const handleSpeedClose = () => {
-      setSpeedAnchorEl(null);
+    const handleSpeedClose = (event, reason, forceClose = false) => {
+      // Don't close if we're currently interacting with inputs, unless forced
+      if (isInteractingWithInputs && !forceClose) {
+        return;
+      }
+      // Close if forced, or if clicking outside the popover or pressing escape
+      if (forceClose || reason === 'backdropClick' || reason === 'escapeKeyDown') {
+        setSpeedAnchorEl(null);
+      }
     };
 
     const handlePresetSpeedClick = (speed) => {
@@ -277,7 +285,7 @@ const VideoPlayer = forwardRef(
       } else {
         onPlaybackRateChange?.(customSpeed);
       }
-      handleSpeedClose();
+      handleSpeedClose(null, null, true); // Force close
     };
 
     const handleDurationInputChange = (event) => {
@@ -565,6 +573,13 @@ const VideoPlayer = forwardRef(
               disableAutoFocus
               disableEnforceFocus
               disableRestoreFocus
+              disableEscapeKeyDown
+              slotProps={{
+                paper: {
+                  onMouseDown: (e) => e.stopPropagation(),
+                  onMouseUp: (e) => e.stopPropagation(),
+                }
+              }}
             >
               <Paper sx={{ p: 2, minWidth: 600 }}>
                 <Typography variant="h6" gutterBottom>
@@ -627,7 +642,13 @@ const VideoPlayer = forwardRef(
                           onKeyDown={handleTextInputKeyDownWithDuration}
                           onMouseDown={(e) => e.stopPropagation()}
                           onMouseUp={(e) => e.stopPropagation()}
-                          onBlur={() => {
+                          onFocus={(e) => {
+                            e.stopPropagation();
+                            setIsInteractingWithInputs(true);
+                          }}
+                          onBlur={(e) => {
+                            e.stopPropagation();
+                            setIsInteractingWithInputs(false);
                             const parsedValue = parseFloat(textInputValue);
                             if (
                               !isNaN(parsedValue) &&
@@ -638,6 +659,10 @@ const VideoPlayer = forwardRef(
                             } else {
                               setTextInputValue(customSpeed.toFixed(2));
                             }
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setIsInteractingWithInputs(true);
                           }}
                           inputProps={{
                             min: 0.1,
@@ -671,6 +696,18 @@ const VideoPlayer = forwardRef(
                           onKeyDown={handleDurationInputKeyDown}
                           onMouseDown={(e) => e.stopPropagation()}
                           onMouseUp={(e) => e.stopPropagation()}
+                          onFocus={(e) => {
+                            e.stopPropagation();
+                            setIsInteractingWithInputs(true);
+                          }}
+                          onBlur={(e) => {
+                            e.stopPropagation();
+                            setIsInteractingWithInputs(false);
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setIsInteractingWithInputs(true);
+                          }}
                           placeholder="MM:SS or HH:MM:SS"
                           inputProps={{
                             style: { textAlign: "center" },
@@ -678,10 +715,25 @@ const VideoPlayer = forwardRef(
                           sx={{ width: 240 }}
                           helperText="Longer duration = slower playback"
                         />
-                        <Typography variant="body2" sx={{ width: 200 }}>
-                          (Original Duration: {Math.floor(duration / 60)}:
-                          {(duration % 60).toFixed(0).padStart(2, "0")})
-                        </Typography>
+                        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, width: 200 }}>
+                          <Typography variant="body2" color="primary.main">
+                            Target Duration: {duration > 0 && customSpeed > 0 ? (() => {
+                              const targetDurationSeconds = duration / customSpeed;
+                              const hours = Math.floor(targetDurationSeconds / 3600);
+                              const minutes = Math.floor((targetDurationSeconds % 3600) / 60);
+                              const seconds = Math.floor(targetDurationSeconds % 60);
+                              if (hours > 0) {
+                                return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                              } else {
+                                return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                              }
+                            })() : "0:00"}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            (Original: {Math.floor(duration / 60)}:
+                            {(duration % 60).toFixed(0).padStart(2, "0")})
+                          </Typography>
+                        </Box>
                       </Box>
                     </Box>
                   </Box>
@@ -713,7 +765,7 @@ const VideoPlayer = forwardRef(
                   <Box
                     sx={{ display: "flex", gap: 1, justifyContent: "flex-end" }}
                   >
-                    <Button size="small" onClick={handleSpeedClose}>
+                    <Button size="small" onClick={() => handleSpeedClose(null, null, true)}>
                       Cancel
                     </Button>
                     <Button
