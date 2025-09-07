@@ -1,8 +1,8 @@
 {
-  "name": "custom-speed-video-player",
-  "version": "1.7.1",
-  "description": "A cross-platform video player with custom speed controls",
-  "author": "Custom Speed Video Player Team",
+  "name": "desktop-custom-speed-video-player",
+  "version": "1.8.0",
+  "description": "A cross-platform desktop video player with custom speed controls",
+  "author": "Desktop Custom Speed Video Player Team",
   "main": "public/electron.js",
   "homepage": "./",
   "scripts": {
@@ -21,8 +21,8 @@
     "dist:linux": "npm run build && electron-builder --linux"
   },
   "build": {
-    "appId": "com.customspeedvideoplayer.app",
-    "productName": "Custom Speed Video Player",
+    "appId": "com.desktopcustomspeedvideoplayer.app",
+    "productName": "Desktop Custom Speed Video Player",
     "directories": {
       "output": "dist"
     },
