@@ -58,6 +58,8 @@ const VideoPlayer = forwardRef(
     const [textInputValue, setTextInputValue] = useState(
       playbackRate.toFixed(2)
     );
+    const [durationInputValue, setDurationInputValue] = useState("");
+    const [durationInputTime, setDurationInputTime] = useState(0);
 
     const videoRef = useRef(null);
     const controlsTimeoutRef = useRef(null);
@@ -174,6 +176,8 @@ const VideoPlayer = forwardRef(
       setSpeedAnchorEl(event.currentTarget);
       setCustomSpeed(playbackRate);
       setTextInputValue(playbackRate.toFixed(2));
+      setDurationInputValue("");
+      setDurationInputTime(0);
     };
 
     const handleSpeedClose = () => {
@@ -183,11 +187,47 @@ const VideoPlayer = forwardRef(
     const handlePresetSpeedClick = (speed) => {
       setCustomSpeed(speed);
       setTextInputValue(speed.toFixed(2));
+      
+      // Update target duration based on new speed
+      if (duration > 0 && speed > 0) {
+        const targetDurationSeconds = duration / speed;
+        const hours = Math.floor(targetDurationSeconds / 3600);
+        const minutes = Math.floor((targetDurationSeconds % 3600) / 60);
+        const seconds = Math.floor(targetDurationSeconds % 60);
+        
+        let durationString = "";
+        if (hours > 0) {
+          durationString = `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        } else {
+          durationString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        setDurationInputValue(durationString);
+        setDurationInputTime(targetDurationSeconds);
+      }
     };
 
     const handleCustomSpeedChange = (event, newValue) => {
       setCustomSpeed(newValue);
       setTextInputValue(newValue.toFixed(2));
+      
+      // Update target duration based on new speed
+      if (duration > 0 && newValue > 0) {
+        const targetDurationSeconds = duration / newValue;
+        const hours = Math.floor(targetDurationSeconds / 3600);
+        const minutes = Math.floor((targetDurationSeconds % 3600) / 60);
+        const seconds = Math.floor(targetDurationSeconds % 60);
+        
+        let durationString = "";
+        if (hours > 0) {
+          durationString = `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        } else {
+          durationString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        setDurationInputValue(durationString);
+        setDurationInputTime(targetDurationSeconds);
+      }
     };
 
     const handleTextInputChange = (event) => {
@@ -197,6 +237,24 @@ const VideoPlayer = forwardRef(
       const parsedValue = parseFloat(inputValue);
       if (!isNaN(parsedValue) && parsedValue >= 0.1 && parsedValue <= 16) {
         setCustomSpeed(parsedValue);
+        
+        // Update target duration based on new speed
+        if (duration > 0 && parsedValue > 0) {
+          const targetDurationSeconds = duration / parsedValue;
+          const hours = Math.floor(targetDurationSeconds / 3600);
+          const minutes = Math.floor((targetDurationSeconds % 3600) / 60);
+          const seconds = Math.floor(targetDurationSeconds % 60);
+          
+          let durationString = "";
+          if (hours > 0) {
+            durationString = `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+          } else {
+            durationString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+          }
+          
+          setDurationInputValue(durationString);
+          setDurationInputTime(targetDurationSeconds);
+        }
       }
     };
 
@@ -220,6 +278,57 @@ const VideoPlayer = forwardRef(
         onPlaybackRateChange?.(customSpeed);
       }
       handleSpeedClose();
+    };
+
+    const handleDurationInputChange = (event) => {
+      const inputValue = event.target.value;
+      setDurationInputValue(inputValue);
+
+      // Parse time input (format: MM:SS or HH:MM:SS)
+      const timeParts = inputValue.split(":").map((part) => parseInt(part, 10));
+      let totalSeconds = 0;
+
+      if (timeParts.length === 2) {
+        // MM:SS format
+        totalSeconds = timeParts[0] * 60 + timeParts[1];
+      } else if (timeParts.length === 3) {
+        // HH:MM:SS format
+        totalSeconds = timeParts[0] * 3600 + timeParts[1] * 60 + timeParts[2];
+      }
+
+      if (
+        !isNaN(totalSeconds) &&
+        totalSeconds > 0 &&
+        totalSeconds <= duration
+      ) {
+        setDurationInputTime(totalSeconds);
+        // Calculate required speed to reach this time
+        const requiredSpeed = duration / totalSeconds;
+        if (requiredSpeed >= 0.1 && requiredSpeed <= 16) {
+          setCustomSpeed(requiredSpeed);
+          setTextInputValue(requiredSpeed.toFixed(2));
+        }
+      }
+    };
+
+    const handleDurationInputKeyDown = (event) => {
+      if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
+        event.preventDefault();
+        handleCustomSpeedCommit();
+      }
+    };
+
+    const handleTextInputKeyDownWithDuration = (event) => {
+      if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
+        event.preventDefault();
+        handleCustomSpeedCommit();
+      } else if (event.key === "Enter") {
+        const parsedValue = parseFloat(textInputValue);
+        if (!isNaN(parsedValue) && parsedValue >= 0.1 && parsedValue <= 16) {
+          setCustomSpeed(parsedValue);
+          setTextInputValue(parsedValue.toFixed(2));
+        }
+      }
     };
 
     const handleSpeedIncrement = () => {
@@ -457,6 +566,9 @@ const VideoPlayer = forwardRef(
                 vertical: "bottom",
                 horizontal: "center",
               }}
+              disableAutoFocus
+              disableEnforceFocus
+              disableRestoreFocus
             >
               <Paper sx={{ p: 2, minWidth: 300 }}>
                 <Typography variant="h6" gutterBottom>
@@ -490,46 +602,91 @@ const VideoPlayer = forwardRef(
 
                 <Divider sx={{ my: 2 }} />
 
-                {/* Custom Speed Input */}
-                <Box>
-                  <Typography variant="subtitle2" gutterBottom>
-                    Custom Speed
-                  </Typography>
+                {/* Custom Speed and Duration Inputs */}
+                <Box sx={{ mb: 2 }}>
                   <Box
                     sx={{
                       display: "flex",
-                      alignItems: "center",
-                      gap: 2,
-                      mb: 2,
+                      gap: 3,
+                      alignItems: "flex-start",
                     }}
                   >
-                    <TextField
-                      size="small"
-                      value={textInputValue}
-                      onChange={handleTextInputChange}
-                      onKeyPress={handleTextInputKeyPress}
-                      onBlur={() => {
-                        const parsedValue = parseFloat(textInputValue);
-                        if (
-                          !isNaN(parsedValue) &&
-                          parsedValue >= 0.1 &&
-                          parsedValue <= 16
-                        ) {
-                          setTextInputValue(parsedValue.toFixed(2));
-                        } else {
-                          setTextInputValue(customSpeed.toFixed(2));
-                        }
-                      }}
-                      inputProps={{
-                        min: 0.1,
-                        max: 16,
-                        step: 0.01,
-                        style: { textAlign: "center" },
-                      }}
-                      sx={{ width: 80 }}
-                      placeholder="1.00"
-                    />
-                    <Typography variant="body2">x</Typography>
+                    {/* Custom Speed Input */}
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="subtitle2" gutterBottom>
+                        Custom Speed
+                      </Typography>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 2,
+                          mb: 2,
+                        }}
+                      >
+                        <TextField
+                          size="small"
+                          value={textInputValue}
+                          onChange={handleTextInputChange}
+                          onKeyDown={handleTextInputKeyDownWithDuration}
+                          onMouseDown={(e) => e.stopPropagation()}
+                          onMouseUp={(e) => e.stopPropagation()}
+                          onBlur={() => {
+                            const parsedValue = parseFloat(textInputValue);
+                            if (
+                              !isNaN(parsedValue) &&
+                              parsedValue >= 0.1 &&
+                              parsedValue <= 16
+                            ) {
+                              setTextInputValue(parsedValue.toFixed(2));
+                            } else {
+                              setTextInputValue(customSpeed.toFixed(2));
+                            }
+                          }}
+                          inputProps={{
+                            min: 0.1,
+                            max: 16,
+                            step: 0.01,
+                            style: { textAlign: "center" },
+                          }}
+                          sx={{ width: 80 }}
+                          placeholder="1.00"
+                        />
+                        <Typography variant="body2">x</Typography>
+                      </Box>
+                    </Box>
+
+                    {/* Duration Input */}
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="subtitle2" gutterBottom>
+                        Target Duration
+                      </Typography>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 2,
+                        }}
+                      >
+                        <TextField
+                          size="small"
+                          value={durationInputValue}
+                          onChange={handleDurationInputChange}
+                          onKeyDown={handleDurationInputKeyDown}
+                          onMouseDown={(e) => e.stopPropagation()}
+                          onMouseUp={(e) => e.stopPropagation()}
+                          placeholder="MM:SS or HH:MM:SS"
+                          inputProps={{
+                            style: { textAlign: "center" },
+                          }}
+                          sx={{ width: 240 }}
+                        />
+                        <Typography variant="body2" sx={{ width: 120 }}>
+                          (Current: {Math.floor(duration / 60)}:
+                          {(duration % 60).toFixed(0).padStart(2, "0")})
+                        </Typography>
+                      </Box>
+                    </Box>
                   </Box>
 
                   {/* Custom Speed Slider */}
@@ -548,6 +705,14 @@ const VideoPlayer = forwardRef(
                     ]}
                     sx={{ mb: 2 }}
                   />
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ mb: 1, display: "block" }}
+                  >
+                    Press Cmd+Enter (Mac) or Ctrl+Enter (Windows) to apply
+                    changes
+                  </Typography>
                   <Box
                     sx={{ display: "flex", gap: 1, justifyContent: "flex-end" }}
                   >
