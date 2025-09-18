@@ -75,7 +75,9 @@ function App() {
   // Keyboard shortcuts and fullscreen detection
   useEffect(() => {
     const handleKeyPress = (e) => {
-      if (e.target.tagName === "INPUT") return;
+      // Only prevent shortcuts when typing in text inputs, not sliders or other controls
+      if (e.target.tagName === "INPUT" && (e.target.type === "text" || e.target.type === "number")) return;
+      if (e.target.tagName === "TEXTAREA") return;
 
       switch (e.code) {
         case "Space":
