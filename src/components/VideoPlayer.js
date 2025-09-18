@@ -131,12 +131,6 @@ const VideoPlayer = forwardRef(
     }, [playbackRate]);
 
     const formatTime = (seconds) => {
-      const mins = Math.floor(seconds / 60);
-      const secs = Math.floor(seconds % 60);
-      return `${mins}:${secs.toString().padStart(2, "0")}`;
-    };
-
-    const formatTimeWithHours = (seconds) => {
       const hours = Math.floor(seconds / 3600);
       const mins = Math.floor((seconds % 3600) / 60);
       const secs = Math.floor(seconds % 60);
@@ -148,6 +142,7 @@ const VideoPlayer = forwardRef(
       }
       return `${mins}:${secs.toString().padStart(2, "0")}`;
     };
+
 
     const handleSeek = (event, newValue) => {
       if (videoRef.current) {
@@ -417,7 +412,7 @@ const VideoPlayer = forwardRef(
                   sx={{ color: "white", minWidth: 45, ml: 1.5 }}
                 >
                   {playbackRate !== 1
-                    ? formatTimeWithHours(adjustedCurrentTime)
+                    ? formatTime(adjustedCurrentTime)
                     : formatTime(currentTime)}
                 </Typography>
                 <Box sx={{ flexGrow: 1, mx: 2 }}>
@@ -445,7 +440,7 @@ const VideoPlayer = forwardRef(
                   sx={{ color: "white", minWidth: 45, mr: 0.5 }}
                 >
                   {playbackRate !== 1
-                    ? formatTimeWithHours(adjustedDuration)
+                    ? formatTime(adjustedDuration)
                     : formatTime(duration)}
                 </Typography>
               </Box>
@@ -730,8 +725,7 @@ const VideoPlayer = forwardRef(
                             })() : "0:00"}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
-                            (Original: {Math.floor(duration / 60)}:
-                            {(duration % 60).toFixed(0).padStart(2, "0")})
+                            (Original: {formatTime(duration)})
                           </Typography>
                         </Box>
                       </Box>
