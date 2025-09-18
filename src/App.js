@@ -23,20 +23,23 @@ function App() {
   const videoRef = useRef(null);
   const containerRef = useRef(null);
 
-  // Check for initial video path from command line arguments
+  // Check for initial video path from command line arguments (Electron only)
   useEffect(() => {
     const checkInitialVideo = async () => {
       try {
-        const initialPath = await window.electronAPI.getInitialVideoPath();
-        if (initialPath) {
-          setCurrentVideo(initialPath);
-          setPlaylist([initialPath]);
-          setCurrentIndex(0);
-          setSnackbar({
-            open: true,
-            message: "Video loaded from command line",
-            severity: "success",
-          });
+        // Only run if in Electron environment
+        if (window.electronAPI && window.electronAPI.getInitialVideoPath) {
+          const initialPath = await window.electronAPI.getInitialVideoPath();
+          if (initialPath) {
+            setCurrentVideo(initialPath);
+            setPlaylist([initialPath]);
+            setCurrentIndex(0);
+            setSnackbar({
+              open: true,
+              message: "Video loaded from command line",
+              severity: "success",
+            });
+          }
         }
       } catch (error) {
         console.error("Error getting initial video path:", error);
@@ -46,7 +49,7 @@ function App() {
     checkInitialVideo();
   }, []);
 
-  // Listen for video file opened events (when app is already running)
+  // Listen for video file opened events (when app is already running) - Electron only
   useEffect(() => {
     const handleVideoFileOpened = (event) => {
       const videoPath = event.detail;
@@ -60,10 +63,13 @@ function App() {
       });
     };
 
-    window.addEventListener("video-file-opened", handleVideoFileOpened);
-    return () => {
-      window.removeEventListener("video-file-opened", handleVideoFileOpened);
-    };
+    // Only add event listener in Electron environment
+    if (window.electronAPI) {
+      window.addEventListener("video-file-opened", handleVideoFileOpened);
+      return () => {
+        window.removeEventListener("video-file-opened", handleVideoFileOpened);
+      };
+    }
   }, []);
 
   // Keyboard shortcuts and fullscreen detection
@@ -169,16 +175,39 @@ function App() {
 
   const handleFileOpen = async () => {
     try {
-      const filePath = await window.electronAPI.openFileDialog();
-      if (filePath) {
-        setCurrentVideo(filePath);
-        setPlaylist([filePath]);
-        setCurrentIndex(0);
-        setSnackbar({
-          open: true,
-          message: "Video loaded successfully",
-          severity: "success",
-        });
+      // Check if we're in Electron environment
+      if (window.electronAPI && window.electronAPI.openFileDialog) {
+        const filePath = await window.electronAPI.openFileDialog();
+        if (filePath) {
+          setCurrentVideo(filePath);
+          setPlaylist([filePath]);
+          setCurrentIndex(0);
+          setSnackbar({
+            open: true,
+            message: "Video loaded successfully",
+            severity: "success",
+          });
+        }
+      } else {
+        // Web browser environment - create file input
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'video/*';
+        input.onchange = (event) => {
+          const file = event.target.files[0];
+          if (file) {
+            const videoUrl = URL.createObjectURL(file);
+            setCurrentVideo(videoUrl);
+            setPlaylist([videoUrl]);
+            setCurrentIndex(0);
+            setSnackbar({
+              open: true,
+              message: "Video loaded successfully",
+              severity: "success",
+            });
+          }
+        };
+        input.click();
       }
     } catch (error) {
       setSnackbar({
