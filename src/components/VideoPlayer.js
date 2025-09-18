@@ -59,7 +59,6 @@ const VideoPlayer = forwardRef(
       playbackRate.toFixed(2)
     );
     const [durationInputValue, setDurationInputValue] = useState("");
-    const [durationInputTime, setDurationInputTime] = useState(0);
     const [isInteractingWithInputs, setIsInteractingWithInputs] = useState(false);
 
     const videoRef = useRef(null);
@@ -239,7 +238,6 @@ const VideoPlayer = forwardRef(
       setCustomSpeed(playbackRate);
       setTextInputValue(playbackRate.toFixed(2));
       setDurationInputValue("");
-      setDurationInputTime(0);
     };
 
     const handleSpeedClose = (event, reason, forceClose = false) => {
@@ -272,7 +270,6 @@ const VideoPlayer = forwardRef(
         }
         
         setDurationInputValue(durationString);
-        setDurationInputTime(targetDurationSeconds);
       }
     };
 
@@ -295,7 +292,6 @@ const VideoPlayer = forwardRef(
         }
         
         setDurationInputValue(durationString);
-        setDurationInputTime(targetDurationSeconds);
       }
     };
 
@@ -322,19 +318,6 @@ const VideoPlayer = forwardRef(
           }
           
           setDurationInputValue(durationString);
-          setDurationInputTime(targetDurationSeconds);
-        }
-      }
-    };
-
-    const handleTextInputKeyPress = (event) => {
-      if (event.key === "Enter") {
-        const parsedValue = parseFloat(textInputValue);
-        if (!isNaN(parsedValue) && parsedValue >= 0.1 && parsedValue <= 16) {
-          setCustomSpeed(parsedValue);
-          setTextInputValue(parsedValue.toFixed(2));
-        } else {
-          setTextInputValue(customSpeed.toFixed(2));
         }
       }
     };
@@ -364,7 +347,6 @@ const VideoPlayer = forwardRef(
       }
 
       if (!isNaN(totalSeconds) && totalSeconds > 0) {
-        setDurationInputTime(totalSeconds);
         // Calculate required speed to reach this time
         const requiredSpeed = duration / totalSeconds;
         if (requiredSpeed >= 0.1 && requiredSpeed <= 16) {
