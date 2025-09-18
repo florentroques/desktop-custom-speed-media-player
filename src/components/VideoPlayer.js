@@ -145,6 +145,24 @@ const VideoPlayer = forwardRef(
       }
     }, [isPlaying]);
 
+    // Handle cursor visibility in fullscreen when popover is open
+    useEffect(() => {
+      const speedOpen = Boolean(speedAnchorEl);
+      if (isFullscreen && speedOpen) {
+        // Force cursor to be visible on fullscreen element
+        const fullscreenEl = document.fullscreenElement;
+        if (fullscreenEl) {
+          fullscreenEl.style.cursor = 'default';
+        }
+      } else if (isFullscreen && !speedOpen && !showControls) {
+        // Reset cursor to none when popover closes in fullscreen
+        const fullscreenEl = document.fullscreenElement;
+        if (fullscreenEl) {
+          fullscreenEl.style.cursor = 'none';
+        }
+      }
+    }, [isFullscreen, speedAnchorEl, showControls]);
+
     const formatTime = (seconds) => {
       const hours = Math.floor(seconds / 3600);
       const mins = Math.floor((seconds % 3600) / 60);
@@ -390,7 +408,7 @@ const VideoPlayer = forwardRef(
           alignItems: "center",
           justifyContent: "center",
           borderRadius: "inherit",
-          cursor: !showControls ? "none" : "default",
+          cursor: speedOpen || showControls ? "default" : "none",
         }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
@@ -597,6 +615,19 @@ const VideoPlayer = forwardRef(
                   onMouseUp: (e) => e.stopPropagation(),
                   sx: {
                     zIndex: 9999,
+                    cursor: "default", // Ensure cursor is visible over entire popover
+                    "& *": {
+                      cursor: "default", // Ensure all child elements show cursor
+                    },
+                    "& button": {
+                      cursor: "pointer", // Interactive elements get pointer cursor
+                    },
+                    "& input": {
+                      cursor: "text", // Text inputs get text cursor
+                    },
+                    "& .MuiSlider-root": {
+                      cursor: "pointer", // Sliders get pointer cursor
+                    }
                   }
                 }
               }}
