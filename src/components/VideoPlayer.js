@@ -307,10 +307,8 @@ const VideoPlayer = forwardRef(
     };
 
     const handleCustomSpeedCommit = () => {
-      const parsedValue = parseFloat(textInputValue);
-      if (!isNaN(parsedValue) && parsedValue >= 0.1 && parsedValue <= 16) {
-        onPlaybackRateChange?.(parsedValue);
-      } else {
+      // Use customSpeed directly as it reflects the current state (from preset clicks or slider changes)
+      if (customSpeed >= 0.1 && customSpeed <= 16) {
         onPlaybackRateChange?.(customSpeed);
       }
       handleSpeedClose(null, null, true); // Force close
@@ -613,6 +611,13 @@ const VideoPlayer = forwardRef(
                 paper: {
                   onMouseDown: (e) => e.stopPropagation(),
                   onMouseUp: (e) => e.stopPropagation(),
+                  onKeyDown: (e) => {
+                    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleCustomSpeedCommit();
+                    }
+                  },
                   sx: {
                     zIndex: 9999,
                     cursor: "default", // Ensure cursor is visible over entire popover
