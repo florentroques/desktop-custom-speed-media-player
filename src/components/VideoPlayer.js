@@ -590,10 +590,14 @@ const VideoPlayer = forwardRef(
               disableEnforceFocus
               disableRestoreFocus
               disableEscapeKeyDown
+              container={isFullscreen ? document.fullscreenElement : document.body}
               slotProps={{
                 paper: {
                   onMouseDown: (e) => e.stopPropagation(),
                   onMouseUp: (e) => e.stopPropagation(),
+                  sx: {
+                    zIndex: 9999,
+                  }
                 }
               }}
             >
