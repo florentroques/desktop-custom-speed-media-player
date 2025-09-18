@@ -130,6 +130,21 @@ const VideoPlayer = forwardRef(
       }
     }, [playbackRate]);
 
+    // Control visibility based on playing state
+    useEffect(() => {
+      if (!isPlaying) {
+        // Show controls when paused
+        setShowControls(true);
+        // Clear any existing timeout when paused
+        if (controlsTimeoutRef.current) {
+          clearTimeout(controlsTimeoutRef.current);
+        }
+      } else {
+        // Hide controls when playing starts
+        setShowControls(false);
+      }
+    }, [isPlaying]);
+
     const formatTime = (seconds) => {
       const hours = Math.floor(seconds / 3600);
       const mins = Math.floor((seconds % 3600) / 60);
@@ -345,13 +360,19 @@ const VideoPlayer = forwardRef(
       if (controlsTimeoutRef.current) {
         clearTimeout(controlsTimeoutRef.current);
       }
-      controlsTimeoutRef.current = setTimeout(() => {
-        setShowControls(false);
-      }, 3000);
+      // Only hide controls automatically if video is playing
+      if (isPlaying) {
+        controlsTimeoutRef.current = setTimeout(() => {
+          setShowControls(false);
+        }, 3000);
+      }
     };
 
     const handleMouseLeave = () => {
-      setShowControls(false);
+      // Only hide controls on mouse leave if video is playing
+      if (isPlaying) {
+        setShowControls(false);
+      }
       if (controlsTimeoutRef.current) {
         clearTimeout(controlsTimeoutRef.current);
       }
