@@ -163,6 +163,39 @@ const VideoPlayer = forwardRef(
       }
     }, [isFullscreen, speedAnchorEl, showControls]);
 
+    // Handle spacebar when popover is open
+    useEffect(() => {
+      const speedOpen = Boolean(speedAnchorEl);
+      if (!speedOpen) return;
+
+      const handleKeyDown = (e) => {
+        // Only handle spacebar when popover is open and not focused on text inputs
+        if (e.code === "Space" && 
+            !(e.target.tagName === "INPUT" && (e.target.type === "text" || e.target.type === "number")) &&
+            e.target.tagName !== "TEXTAREA") {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          // Toggle play/pause
+          if (videoRef.current) {
+            if (isPlaying) {
+              videoRef.current.pause();
+            } else {
+              videoRef.current.play();
+            }
+          }
+          
+          // Close popover
+          setSpeedAnchorEl(null);
+        }
+      };
+
+      document.addEventListener("keydown", handleKeyDown);
+      return () => {
+        document.removeEventListener("keydown", handleKeyDown);
+      };
+    }, [speedAnchorEl, isPlaying]);
+
     const formatTime = (seconds) => {
       const hours = Math.floor(seconds / 3600);
       const mins = Math.floor((seconds % 3600) / 60);
