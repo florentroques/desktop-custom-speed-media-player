@@ -254,6 +254,8 @@ function App() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
+          padding: 1,
+          minHeight: 0, // Allow flex item to shrink
         }}
       >
         {/* Video Player */}
@@ -261,6 +263,8 @@ function App() {
           sx={{
             width: "100%",
             height: "100%",
+            maxWidth: "100vw",
+            maxHeight: "100vh",
             position: "relative",
             backgroundColor: "black",
             borderRadius: 2,
