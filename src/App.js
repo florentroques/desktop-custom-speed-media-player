@@ -35,11 +35,14 @@ function App() {
   // Update page title based on media metadata
   useEffect(() => {
     if (mediaMetadata) {
-      const { title, artist, isAudio } = mediaMetadata;
+      const { title, artist, album, isAudio } = mediaMetadata;
       let newTitle = title;
       
       if (artist) {
         newTitle = `${title} - ${artist}`;
+        if (album) {
+          newTitle = `${title} - ${artist} (${album})`;
+        }
       }
       
       // Add media type suffix
@@ -318,7 +321,6 @@ function App() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          padding: 1,
           minHeight: 0, // Allow flex item to shrink
         }}
       >

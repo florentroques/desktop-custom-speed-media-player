@@ -30,6 +30,7 @@ import {
   MusicNote,
   AudioFile,
 } from "@mui/icons-material";
+import { parseFile, parseBlob } from 'music-metadata';
 
 const MediaPlayer = forwardRef(
   (
@@ -71,13 +72,58 @@ const MediaPlayer = forwardRef(
     const [audioMetadata, setAudioMetadata] = useState({
       title: null,
       artist: null,
-      fileName: null
+      fileName: null,
+      albumArt: null,
+      album: null,
+      year: null
     });
 
     const videoRef = useRef(null);
     const controlsTimeoutRef = useRef(null);
 
     const presetSpeeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4];
+
+    // Helper function to extract metadata from audio file
+    const extractAudioMetadata = async (audioSrc, fileName) => {
+      try {
+        let metadata;
+        
+        if (audioSrc.startsWith('blob:') || audioSrc.startsWith('file:')) {
+          // For blob URLs or file URLs, we need to fetch the file first
+          const response = await fetch(audioSrc);
+          const arrayBuffer = await response.arrayBuffer();
+          const blob = new Blob([arrayBuffer]);
+          metadata = await parseBlob(blob);
+        } else {
+          // For file paths (Electron environment)
+          metadata = await parseFile(audioSrc);
+        }
+
+        const extractedFileName = fileName ? fileName.replace(/\.[^/.]+$/, '') : 'Audio File';
+        
+        return {
+          title: metadata.common.title || extractedFileName,
+          artist: metadata.common.artist || metadata.common.albumartist || null,
+          album: metadata.common.album || null,
+          year: metadata.common.year || null,
+          fileName: extractedFileName,
+          albumArt: metadata.common.picture && metadata.common.picture.length > 0 
+            ? URL.createObjectURL(new Blob([metadata.common.picture[0].data], { type: metadata.common.picture[0].format }))
+            : null
+        };
+      } catch (error) {
+        console.error('Error extracting audio metadata:', error);
+        const extractedFileName = fileName ? fileName.replace(/\.[^/.]+$/, '') : 'Audio File';
+        return {
+          title: extractedFileName,
+          artist: null,
+          album: null,
+          year: null,
+          fileName: extractedFileName,
+          albumArt: null
+        };
+      }
+    };
 
     // Forward the ref
     React.useImperativeHandle(ref, () => videoRef.current);
@@ -152,76 +198,25 @@ const MediaPlayer = forwardRef(
     // Extract metadata from audio files
     useEffect(() => {
       if (isAudio && src) {
-        // Use passed fileName or extract from src
-        let extractedFileName = '';
-        
-        if (fileName) {
-          // Use the passed fileName (without extension)
-          extractedFileName = fileName.replace(/\.[^/.]+$/, '');
-        } else {
-          // Extract filename from src as fallback
-          try {
-            if (src.startsWith('blob:') || src.startsWith('file:')) {
-              // For blob URLs or file URLs, we can't easily get the original filename
-              extractedFileName = 'Audio File';
-            } else {
-              // Extract filename from path
-              const pathParts = src.split(/[/\\]/);
-              extractedFileName = pathParts[pathParts.length - 1];
-              // Remove file extension
-              extractedFileName = extractedFileName.replace(/\.[^/.]+$/, '');
-            }
-          } catch (e) {
-            extractedFileName = 'Audio File';
+        const extractMetadata = async () => {
+          const metadata = await extractAudioMetadata(src, fileName);
+          setAudioMetadata(metadata);
+          
+          // Call the metadata change callback
+          if (onMetadataChange) {
+            onMetadataChange({
+              title: metadata.title,
+              artist: metadata.artist,
+              album: metadata.album,
+              year: metadata.year,
+              fileName: metadata.fileName,
+              albumArt: metadata.albumArt,
+              isAudio: true
+            });
           }
-        }
-
-        const initialMetadata = {
-          title: null,
-          artist: null,
-          fileName: extractedFileName
         };
-        setAudioMetadata(initialMetadata);
-        
-        // Call the metadata change callback
-        if (onMetadataChange) {
-          onMetadataChange({
-            title: initialMetadata.title || extractedFileName,
-            artist: initialMetadata.artist,
-            fileName: extractedFileName,
-            isAudio: true
-          });
-        }
 
-        // Try to extract metadata when the audio loads
-        const audio = videoRef.current;
-        if (audio) {
-          const handleLoadedMetadata = () => {
-            // Unfortunately, HTML5 audio doesn't provide easy access to ID3 tags
-            // We'll use the filename as fallback and could enhance this later with a library
-            const updatedMetadata = {
-              title: extractedFileName,
-              artist: null,
-              fileName: extractedFileName
-            };
-            setAudioMetadata(updatedMetadata);
-            
-            // Call the metadata change callback with updated info
-            if (onMetadataChange) {
-              onMetadataChange({
-                title: updatedMetadata.title,
-                artist: updatedMetadata.artist,
-                fileName: extractedFileName,
-                isAudio: true
-              });
-            }
-          };
-
-          audio.addEventListener('loadedmetadata', handleLoadedMetadata);
-          return () => {
-            audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
-          };
-        }
+        extractMetadata();
       }
     }, [src, isAudio, fileName]);
 
@@ -550,64 +545,119 @@ const MediaPlayer = forwardRef(
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                background: "linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)",
+                background: audioMetadata.albumArt 
+                  ? `linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.8) 100%), url(${audioMetadata.albumArt})`
+                  : "linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)",
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
                 borderRadius: "inherit",
                 position: "relative",
               }}
             >
-              {/* Large Music Icon */}
+              {/* Album Art and Metadata */}
               <Box
                 sx={{
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
-                  gap: 2,
-                  opacity: 0.7,
+                  gap: 3,
+                  opacity: 0.95,
                   maxWidth: "95%",
                   zIndex: 2,
                 }}
               >
-                <MusicNote
-                  sx={{
-                    fontSize: 120,
-                    color: "primary.main",
-                  }}
-                />
+                {/* Album Art or Music Icon */}
+                {audioMetadata.albumArt ? (
+                  <Box
+                    sx={{
+                      width: 200,
+                      height: 200,
+                      borderRadius: 2,
+                      overflow: "hidden",
+                      boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
+                      border: "2px solid rgba(255,255,255,0.2)",
+                    }}
+                  >
+                    <img
+                      src={audioMetadata.albumArt}
+                      alt="Album Art"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                    />
+                  </Box>
+                ) : (
+                  <MusicNote
+                    sx={{
+                      fontSize: 120,
+                      color: "primary.main",
+                    }}
+                  />
+                )}
+
+                {/* Metadata Text */}
                 {audioMetadata.title || audioMetadata.fileName ? (
-                  <>
+                  <Box sx={{ textAlign: "center", maxWidth: "90%" }}>
                     <Typography
-                      variant="h6"
+                      variant="h5"
                       sx={{
                         color: "white",
                         textAlign: "center",
-                        opacity: 0.9,
-                        fontWeight: 500,
-                        maxWidth: "90%",
+                        opacity: 0.95,
+                        fontWeight: 600,
+                        maxWidth: "100%",
                         wordBreak: "break-word",
                         lineHeight: 1.3,
                         px: 2,
+                        mb: 1,
+                        textShadow: audioMetadata.albumArt ? "2px 2px 4px rgba(0,0,0,0.8)" : "none",
                       }}
                     >
                       {audioMetadata.title || audioMetadata.fileName}
                     </Typography>
+                    
                     {audioMetadata.artist && (
                       <Typography
-                        variant="body2"
+                        variant="h6"
                         sx={{
                           color: "white",
                           textAlign: "center",
-                          opacity: 0.7,
-                          mt: 0.5,
-                          maxWidth: "90%",
+                          opacity: 0.8,
+                          maxWidth: "100%",
                           wordBreak: "break-word",
                           lineHeight: 1.2,
                           px: 2,
+                          mb: 1,
+                          textShadow: audioMetadata.albumArt ? "2px 2px 4px rgba(0,0,0,0.8)" : "none",
                         }}
                       >
                         by {audioMetadata.artist}
                       </Typography>
                     )}
-                  </>
+                    
+                    {audioMetadata.album && (
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          color: "white",
+                          textAlign: "center",
+                          opacity: 0.7,
+                          maxWidth: "100%",
+                          wordBreak: "break-word",
+                          lineHeight: 1.2,
+                          px: 2,
+                          mb: 0.5,
+                          textShadow: audioMetadata.albumArt ? "2px 2px 4px rgba(0,0,0,0.8)" : "none",
+                        }}
+                      >
+                        {audioMetadata.album}
+                        {audioMetadata.year && ` (${audioMetadata.year})`}
+                      </Typography>
+                    )}
+                  </Box>
                 ) : (
                   <Typography
                     variant="h6"
@@ -615,6 +665,7 @@ const MediaPlayer = forwardRef(
                       color: "white",
                       textAlign: "center",
                       opacity: 0.8,
+                      textShadow: audioMetadata.albumArt ? "2px 2px 4px rgba(0,0,0,0.8)" : "none",
                     }}
                   >
                     Audio Player
