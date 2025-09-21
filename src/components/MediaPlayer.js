@@ -223,7 +223,7 @@ const MediaPlayer = forwardRef(
           };
         }
       }
-    }, [src, isAudio, fileName, onMetadataChange]);
+    }, [src, isAudio, fileName]);
 
     // Extract metadata from video files
     useEffect(() => {
@@ -240,7 +240,7 @@ const MediaPlayer = forwardRef(
           });
         }
       }
-    }, [src, isAudio, fileName, onMetadataChange]);
+    }, [src, isAudio, fileName]);
 
     // Control visibility based on playing state
     useEffect(() => {

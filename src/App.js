@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Box, Typography, Button, Alert, Snackbar } from "@mui/material";
 import { FileOpen } from "@mui/icons-material";
 import MediaPlayer from "./components/MediaPlayer";
@@ -28,9 +28,9 @@ function App() {
   const containerRef = useRef(null);
 
   // Handle media metadata changes
-  const handleMetadataChange = (metadata) => {
+  const handleMetadataChange = useCallback((metadata) => {
     setMediaMetadata(metadata);
-  };
+  }, []);
 
   // Update page title based on media metadata
   useEffect(() => {
