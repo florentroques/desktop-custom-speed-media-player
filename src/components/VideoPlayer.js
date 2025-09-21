@@ -26,6 +26,7 @@ import {
   Speed,
   Add,
   Remove,
+  Repeat,
 } from "@mui/icons-material";
 
 const VideoPlayer = forwardRef(
@@ -44,6 +45,8 @@ const VideoPlayer = forwardRef(
       onFullscreenToggle,
       onStop,
       onSkip,
+      onLoopToggle,
+      isLooping = false,
     },
     ref
   ) => {
@@ -128,6 +131,13 @@ const VideoPlayer = forwardRef(
         videoRef.current.playbackRate = playbackRate;
       }
     }, [playbackRate]);
+
+    // Set loop property on video element
+    useEffect(() => {
+      if (videoRef.current) {
+        videoRef.current.loop = isLooping;
+      }
+    }, [isLooping]);
 
     // Control visibility based on playing state
     useEffect(() => {
@@ -438,6 +448,7 @@ const VideoPlayer = forwardRef(
           }}
           controls={false}
           preload="metadata"
+          loop={isLooping}
         />
 
         {/* Floating Controls Bar */}
@@ -526,6 +537,19 @@ const VideoPlayer = forwardRef(
                 >
                   <SkipNext />
                 </IconButton>
+                <Tooltip title={isLooping ? "Disable Loop" : "Enable Loop"}>
+                  <IconButton
+                    onClick={onLoopToggle}
+                    sx={{ 
+                      color: isLooping ? "primary.main" : "white",
+                      "&:hover": {
+                        color: isLooping ? "primary.dark" : "rgba(255,255,255,0.8)"
+                      }
+                    }}
+                  >
+                    <Repeat />
+                  </IconButton>
+                </Tooltip>
               </Box>
 
               {/* Center - Volume Control */}

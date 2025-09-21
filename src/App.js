@@ -14,6 +14,7 @@ function App() {
     !!document.fullscreenElement
   );
   const [playbackRate, setPlaybackRate] = useState(1);
+  const [isLooping, setIsLooping] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -228,12 +229,19 @@ function App() {
   };
 
   const handleVideoEnded = () => {
-    if (currentIndex < playlist.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-      setCurrentVideo(playlist[currentIndex + 1]);
-    } else {
-      setIsPlaying(false);
+    // Don't auto-advance to next video if looping is enabled
+    if (!isLooping) {
+      if (currentIndex < playlist.length - 1) {
+        setCurrentIndex(currentIndex + 1);
+        setCurrentVideo(playlist[currentIndex + 1]);
+      } else {
+        setIsPlaying(false);
+      }
     }
+  };
+
+  const toggleLoop = () => {
+    setIsLooping(!isLooping);
   };
 
   return (
@@ -288,6 +296,8 @@ function App() {
               onFullscreenToggle={toggleFullscreen}
               onStop={stopVideo}
               onSkip={skip}
+              onLoopToggle={toggleLoop}
+              isLooping={isLooping}
             />
           ) : (
             <Box
