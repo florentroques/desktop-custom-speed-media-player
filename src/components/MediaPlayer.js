@@ -27,9 +27,11 @@ import {
   Add,
   Remove,
   Repeat,
+  MusicNote,
+  AudioFile,
 } from "@mui/icons-material";
 
-const VideoPlayer = forwardRef(
+const MediaPlayer = forwardRef(
   (
     {
       src,
@@ -47,6 +49,8 @@ const VideoPlayer = forwardRef(
       onSkip,
       onLoopToggle,
       isLooping = false,
+      isAudio = false,
+      fileName = null,
     },
     ref
   ) => {
@@ -63,6 +67,11 @@ const VideoPlayer = forwardRef(
     );
     const [durationInputValue, setDurationInputValue] = useState("");
     const [isInteractingWithInputs, setIsInteractingWithInputs] = useState(false);
+    const [audioMetadata, setAudioMetadata] = useState({
+      title: null,
+      artist: null,
+      fileName: null
+    });
 
     const videoRef = useRef(null);
     const controlsTimeoutRef = useRef(null);
@@ -138,6 +147,60 @@ const VideoPlayer = forwardRef(
         videoRef.current.loop = isLooping;
       }
     }, [isLooping]);
+
+    // Extract metadata from audio files
+    useEffect(() => {
+      if (isAudio && src) {
+        // Use passed fileName or extract from src
+        let extractedFileName = '';
+        
+        if (fileName) {
+          // Use the passed fileName (without extension)
+          extractedFileName = fileName.replace(/\.[^/.]+$/, '');
+        } else {
+          // Extract filename from src as fallback
+          try {
+            if (src.startsWith('blob:') || src.startsWith('file:')) {
+              // For blob URLs or file URLs, we can't easily get the original filename
+              extractedFileName = 'Audio File';
+            } else {
+              // Extract filename from path
+              const pathParts = src.split(/[/\\]/);
+              extractedFileName = pathParts[pathParts.length - 1];
+              // Remove file extension
+              extractedFileName = extractedFileName.replace(/\.[^/.]+$/, '');
+            }
+          } catch (e) {
+            extractedFileName = 'Audio File';
+          }
+        }
+
+        setAudioMetadata({
+          title: null,
+          artist: null,
+          fileName: extractedFileName
+        });
+
+        // Try to extract metadata when the audio loads
+        const audio = videoRef.current;
+        if (audio) {
+          const handleLoadedMetadata = () => {
+            // Unfortunately, HTML5 audio doesn't provide easy access to ID3 tags
+            // We'll use the filename as fallback and could enhance this later with a library
+            setAudioMetadata(prev => ({
+              ...prev,
+              title: prev.title || extractedFileName,
+              artist: prev.artist || null
+            }));
+          };
+
+          audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+          return () => {
+            audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+          };
+        }
+      }
+    }, [src, isAudio, fileName]);
 
     // Control visibility based on playing state
     useEffect(() => {
@@ -436,20 +499,115 @@ const VideoPlayer = forwardRef(
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
-        <video
-          ref={videoRef}
-          src={src}
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "contain",
-            backgroundColor: "black",
-            borderRadius: "inherit",
-          }}
-          controls={false}
-          preload="metadata"
-          loop={isLooping}
-        />
+        {isAudio ? (
+          <>
+            {/* Audio Visualizer Background */}
+            <Box
+              sx={{
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)",
+                borderRadius: "inherit",
+                position: "relative",
+              }}
+            >
+              {/* Large Music Icon */}
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 2,
+                  opacity: 0.7,
+                  maxWidth: "95%",
+                  zIndex: 2,
+                }}
+              >
+                <MusicNote
+                  sx={{
+                    fontSize: 120,
+                    color: "primary.main",
+                  }}
+                />
+                {audioMetadata.title || audioMetadata.fileName ? (
+                  <>
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        color: "white",
+                        textAlign: "center",
+                        opacity: 0.9,
+                        fontWeight: 500,
+                        maxWidth: "90%",
+                        wordBreak: "break-word",
+                        lineHeight: 1.3,
+                        px: 2,
+                      }}
+                    >
+                      {audioMetadata.title || audioMetadata.fileName}
+                    </Typography>
+                    {audioMetadata.artist && (
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: "white",
+                          textAlign: "center",
+                          opacity: 0.7,
+                          mt: 0.5,
+                          maxWidth: "90%",
+                          wordBreak: "break-word",
+                          lineHeight: 1.2,
+                          px: 2,
+                        }}
+                      >
+                        by {audioMetadata.artist}
+                      </Typography>
+                    )}
+                  </>
+                ) : (
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      color: "white",
+                      textAlign: "center",
+                      opacity: 0.8,
+                    }}
+                  >
+                    Audio Player
+                  </Typography>
+                )}
+              </Box>
+            </Box>
+            <audio
+              ref={videoRef}
+              src={src}
+              controls={false}
+              preload="metadata"
+              loop={isLooping}
+              style={{ display: "none" }}
+            />
+          </>
+        ) : (
+          <video
+            ref={videoRef}
+            src={src}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "contain",
+              backgroundColor: "black",
+              borderRadius: "inherit",
+            }}
+            controls={false}
+            preload="metadata"
+            loop={isLooping}
+          />
+        )}
+
 
         {/* Floating Controls Bar */}
         {showControls && (
@@ -553,7 +711,7 @@ const VideoPlayer = forwardRef(
               </Box>
 
               {/* Center - Volume Control */}
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1, marginRight: 3 }}>
                 <IconButton onClick={toggleMute} sx={{ color: "white" }}>
                   {isMuted ? <VolumeOff /> : <VolumeUp />}
                 </IconButton>
@@ -619,12 +777,14 @@ const VideoPlayer = forwardRef(
                   </IconButton>
                 </Tooltip>
 
-                <IconButton
-                  onClick={onFullscreenToggle}
-                  sx={{ color: "white" }}
-                >
-                  {isFullscreen ? <FullscreenExit /> : <Fullscreen />}
-                </IconButton>
+                {!isAudio && (
+                  <IconButton
+                    onClick={onFullscreenToggle}
+                    sx={{ color: "white" }}
+                  >
+                    {isFullscreen ? <FullscreenExit /> : <Fullscreen />}
+                  </IconButton>
+                )}
               </Box>
             </Box>
 
@@ -899,6 +1059,6 @@ const VideoPlayer = forwardRef(
   }
 );
 
-VideoPlayer.displayName = "VideoPlayer";
+MediaPlayer.displayName = "MediaPlayer";
 
-export default VideoPlayer;
+export default MediaPlayer;

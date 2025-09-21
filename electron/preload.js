@@ -1,10 +1,10 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
-// Listen for video file open events
-ipcRenderer.on("open-video-file", (event, videoPath) => {
+// Listen for media file open events (video and audio)
+ipcRenderer.on("open-media-file", (event, mediaPath) => {
   // Dispatch a custom event that the React app can listen to
   window.dispatchEvent(
-    new CustomEvent("video-file-opened", { detail: videoPath })
+    new CustomEvent("media-file-opened", { detail: mediaPath })
   );
 });
 

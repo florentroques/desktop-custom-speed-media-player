@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Box, Typography, Button, Alert, Snackbar } from "@mui/material";
 import { FileOpen } from "@mui/icons-material";
-import VideoPlayer from "./components/VideoPlayer";
+import MediaPlayer from "./components/MediaPlayer";
 
 function App() {
   const [currentVideo, setCurrentVideo] = useState(null);
@@ -15,6 +15,8 @@ function App() {
   );
   const [playbackRate, setPlaybackRate] = useState(1);
   const [isLooping, setIsLooping] = useState(false);
+  const [isAudio, setIsAudio] = useState(false);
+  const [currentFileName, setCurrentFileName] = useState(null);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -32,12 +34,16 @@ function App() {
         if (window.electronAPI && window.electronAPI.getInitialVideoPath) {
           const initialPath = await window.electronAPI.getInitialVideoPath();
           if (initialPath) {
+            const isAudioType = isAudioFile(initialPath);
+            const fileName = initialPath.split(/[/\\]/).pop();
             setCurrentVideo(initialPath);
             setPlaylist([initialPath]);
             setCurrentIndex(0);
+            setIsAudio(isAudioType);
+            setCurrentFileName(fileName);
             setSnackbar({
               open: true,
-              message: "Video loaded from command line",
+              message: `${isAudioType ? 'Audio' : 'Video'} loaded from command line`,
               severity: "success",
             });
           }
@@ -50,25 +56,35 @@ function App() {
     checkInitialVideo();
   }, []);
 
-  // Listen for video file opened events (when app is already running) - Electron only
+  // Helper function to check if a file is audio
+  const isAudioFile = (filePath) => {
+    const audioExtensions = ['.mp3', '.wav', '.flac', '.aac', '.ogg', '.m4a', '.wma', '.opus'];
+    return audioExtensions.some(ext => filePath.toLowerCase().endsWith(ext));
+  };
+
+  // Listen for media file opened events (when app is already running) - Electron only
   useEffect(() => {
-    const handleVideoFileOpened = (event) => {
-      const videoPath = event.detail;
-      setCurrentVideo(videoPath);
-      setPlaylist([videoPath]);
+    const handleMediaFileOpened = (event) => {
+      const mediaPath = event.detail;
+      const isAudioType = isAudioFile(mediaPath);
+      const fileName = mediaPath.split(/[/\\]/).pop();
+      setCurrentVideo(mediaPath);
+      setPlaylist([mediaPath]);
       setCurrentIndex(0);
+      setIsAudio(isAudioType);
+      setCurrentFileName(fileName);
       setSnackbar({
         open: true,
-        message: "Video loaded from file association",
+        message: `${isAudioType ? 'Audio' : 'Video'} loaded from file association`,
         severity: "success",
       });
     };
 
     // Only add event listener in Electron environment
     if (window.electronAPI) {
-      window.addEventListener("video-file-opened", handleVideoFileOpened);
+      window.addEventListener("media-file-opened", handleMediaFileOpened);
       return () => {
-        window.removeEventListener("video-file-opened", handleVideoFileOpened);
+        window.removeEventListener("media-file-opened", handleMediaFileOpened);
       };
     }
   }, []);
@@ -182,12 +198,16 @@ function App() {
       if (window.electronAPI && window.electronAPI.openFileDialog) {
         const filePath = await window.electronAPI.openFileDialog();
         if (filePath) {
+          const isAudioType = isAudioFile(filePath);
+          const fileName = filePath.split(/[/\\]/).pop();
           setCurrentVideo(filePath);
           setPlaylist([filePath]);
           setCurrentIndex(0);
+          setIsAudio(isAudioType);
+          setCurrentFileName(fileName);
           setSnackbar({
             open: true,
-            message: "Video loaded successfully",
+            message: `${isAudioType ? 'Audio' : 'Video'} loaded successfully`,
             severity: "success",
           });
         }
@@ -195,17 +215,20 @@ function App() {
         // Web browser environment - create file input
         const input = document.createElement('input');
         input.type = 'file';
-        input.accept = 'video/*';
+        input.accept = 'video/*,audio/*';
         input.onchange = (event) => {
           const file = event.target.files[0];
           if (file) {
-            const videoUrl = URL.createObjectURL(file);
-            setCurrentVideo(videoUrl);
-            setPlaylist([videoUrl]);
+            const mediaUrl = URL.createObjectURL(file);
+            const isAudioType = file.type.startsWith('audio/');
+            setCurrentVideo(mediaUrl);
+            setPlaylist([mediaUrl]);
             setCurrentIndex(0);
+            setIsAudio(isAudioType);
+            setCurrentFileName(file.name);
             setSnackbar({
               open: true,
-              message: "Video loaded successfully",
+              message: `${isAudioType ? 'Audio' : 'Video'} loaded successfully`,
               severity: "success",
             });
           }
@@ -281,7 +304,7 @@ function App() {
           }}
         >
           {currentVideo ? (
-            <VideoPlayer
+            <MediaPlayer
               ref={videoRef}
               src={currentVideo}
               volume={isMuted ? 0 : volume}
@@ -298,6 +321,8 @@ function App() {
               onSkip={skip}
               onLoopToggle={toggleLoop}
               isLooping={isLooping}
+              isAudio={isAudio}
+              fileName={currentFileName}
             />
           ) : (
             <Box
@@ -312,10 +337,10 @@ function App() {
               }}
             >
               <Typography variant="h4" gutterBottom>
-                No Video Loaded
+                No Media Loaded
               </Typography>
               <Typography variant="body1" gutterBottom>
-                Open a video file to get started
+                Open a video or audio file to get started
               </Typography>
               <Button
                 variant="contained"
@@ -323,7 +348,7 @@ function App() {
                 onClick={handleFileOpen}
                 sx={{ mt: 2 }}
               >
-                Open Video File
+                Open Media File
               </Button>
             </Box>
           )}

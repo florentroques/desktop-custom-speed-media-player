@@ -173,7 +173,7 @@ custom-speed-video-player/
 │   └── assets/              # Icons and assets
 ├── src/                     # React application
 │   ├── components/          # React components
-│   │   └── VideoPlayer.js   # Main video player component
+│   │   └── MediaPlayer.js   # Main media player component
 │   └── App.js               # Main application component
 ├── scripts/                 # Build and utility scripts
 │   ├── setup-file-associations-windows.js

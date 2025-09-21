@@ -24,7 +24,16 @@ function handleCommandLineArguments() {
       arg.endsWith(".wmv") ||
       arg.endsWith(".flv") ||
       arg.endsWith(".webm") ||
-      arg.endsWith(".m4v")
+      arg.endsWith(".m4v") ||
+      // Audio formats
+      arg.endsWith(".mp3") ||
+      arg.endsWith(".wav") ||
+      arg.endsWith(".flac") ||
+      arg.endsWith(".aac") ||
+      arg.endsWith(".ogg") ||
+      arg.endsWith(".m4a") ||
+      arg.endsWith(".wma") ||
+      arg.endsWith(".opus")
     ) {
       initialVideoPath = arg;
       break;
@@ -32,10 +41,21 @@ function handleCommandLineArguments() {
   }
 }
 
-// Helper function to check if a path is a video file
-function isVideoFile(filePath) {
-  const videoExtensions = ['.mp4', '.avi', '.mkv', '.mov', '.wmv', '.flv', '.webm', '.m4v'];
-  return videoExtensions.some(ext => filePath.toLowerCase().endsWith(ext));
+// Helper function to check if a path is a media file (video or audio)
+function isMediaFile(filePath) {
+  const mediaExtensions = [
+    // Video formats
+    '.mp4', '.avi', '.mkv', '.mov', '.wmv', '.flv', '.webm', '.m4v',
+    // Audio formats
+    '.mp3', '.wav', '.flac', '.aac', '.ogg', '.m4a', '.wma', '.opus'
+  ];
+  return mediaExtensions.some(ext => filePath.toLowerCase().endsWith(ext));
+}
+
+// Helper function to check if a path is an audio file
+function isAudioFile(filePath) {
+  const audioExtensions = ['.mp3', '.wav', '.flac', '.aac', '.ogg', '.m4a', '.wma', '.opus'];
+  return audioExtensions.some(ext => filePath.toLowerCase().endsWith(ext));
 }
 
 function createWindow() {
@@ -116,16 +136,16 @@ app.on("open-file", (event, filePath) => {
   
   console.log('File opened:', filePath);
   
-  if (isVideoFile(filePath)) {
+  if (isMediaFile(filePath)) {
     if (mainWindow) {
       // App is already running, send the file to the renderer
-      mainWindow.webContents.send("open-video-file", filePath);
+      mainWindow.webContents.send("open-media-file", filePath);
     } else {
       // App is starting up, store the path
       initialVideoPath = filePath;
     }
   } else {
-    console.log('Not a video file:', filePath);
+    console.log('Not a media file:', filePath);
   }
 });
 
@@ -144,13 +164,13 @@ app.on("second-instance", (event, commandLine, workingDirectory) => {
     if (mainWindow.isMinimized()) mainWindow.restore();
     mainWindow.focus();
 
-    // Check if a video file was passed as argument
-    const videoPath = commandLine.find(arg => isVideoFile(arg));
+    // Check if a media file was passed as argument
+    const mediaPath = commandLine.find(arg => isMediaFile(arg));
 
-    if (videoPath) {
-      console.log('Opening video file from second instance:', videoPath);
-      // Send the video path to the renderer process
-      mainWindow.webContents.send("open-video-file", videoPath);
+    if (mediaPath) {
+      console.log('Opening media file from second instance:', mediaPath);
+      // Send the media path to the renderer process
+      mainWindow.webContents.send("open-media-file", mediaPath);
     }
   }
 });
@@ -161,8 +181,16 @@ ipcMain.handle("open-file-dialog", async () => {
     properties: ["openFile"],
     filters: [
       {
+        name: "Media Files",
+        extensions: ["mp4", "avi", "mkv", "mov", "wmv", "flv", "webm", "m4v", "mp3", "wav", "flac", "aac", "ogg", "m4a", "wma", "opus"],
+      },
+      {
         name: "Video Files",
         extensions: ["mp4", "avi", "mkv", "mov", "wmv", "flv", "webm", "m4v"],
+      },
+      {
+        name: "Audio Files",
+        extensions: ["mp3", "wav", "flac", "aac", "ogg", "m4a", "wma", "opus"],
       },
       { name: "All Files", extensions: ["*"] },
     ],
