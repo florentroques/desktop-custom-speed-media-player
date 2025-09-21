@@ -1,6 +1,6 @@
 {
   "name": "desktop-custom-speed-media-player",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "A cross-platform desktop media player with custom speed controls",
   "author": "Desktop Custom Speed Media Player Team",
   "main": "public/electron.js",
