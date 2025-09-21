@@ -51,6 +51,7 @@ const MediaPlayer = forwardRef(
       isLooping = false,
       isAudio = false,
       fileName = null,
+      onMetadataChange,
     },
     ref
   ) => {
@@ -175,11 +176,22 @@ const MediaPlayer = forwardRef(
           }
         }
 
-        setAudioMetadata({
+        const initialMetadata = {
           title: null,
           artist: null,
           fileName: extractedFileName
-        });
+        };
+        setAudioMetadata(initialMetadata);
+        
+        // Call the metadata change callback
+        if (onMetadataChange) {
+          onMetadataChange({
+            title: initialMetadata.title || extractedFileName,
+            artist: initialMetadata.artist,
+            fileName: extractedFileName,
+            isAudio: true
+          });
+        }
 
         // Try to extract metadata when the audio loads
         const audio = videoRef.current;
@@ -187,11 +199,22 @@ const MediaPlayer = forwardRef(
           const handleLoadedMetadata = () => {
             // Unfortunately, HTML5 audio doesn't provide easy access to ID3 tags
             // We'll use the filename as fallback and could enhance this later with a library
-            setAudioMetadata(prev => ({
-              ...prev,
-              title: prev.title || extractedFileName,
-              artist: prev.artist || null
-            }));
+            const updatedMetadata = {
+              title: extractedFileName,
+              artist: null,
+              fileName: extractedFileName
+            };
+            setAudioMetadata(updatedMetadata);
+            
+            // Call the metadata change callback with updated info
+            if (onMetadataChange) {
+              onMetadataChange({
+                title: updatedMetadata.title,
+                artist: updatedMetadata.artist,
+                fileName: extractedFileName,
+                isAudio: true
+              });
+            }
           };
 
           audio.addEventListener('loadedmetadata', handleLoadedMetadata);
@@ -200,7 +223,24 @@ const MediaPlayer = forwardRef(
           };
         }
       }
-    }, [src, isAudio, fileName]);
+    }, [src, isAudio, fileName, onMetadataChange]);
+
+    // Extract metadata from video files
+    useEffect(() => {
+      if (!isAudio && src && fileName) {
+        // For video files, use the fileName as title
+        const extractedFileName = fileName.replace(/\.[^/.]+$/, '');
+        
+        if (onMetadataChange) {
+          onMetadataChange({
+            title: extractedFileName,
+            artist: null,
+            fileName: extractedFileName,
+            isAudio: false
+          });
+        }
+      }
+    }, [src, isAudio, fileName, onMetadataChange]);
 
     // Control visibility based on playing state
     useEffect(() => {

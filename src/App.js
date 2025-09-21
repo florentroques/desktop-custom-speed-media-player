@@ -17,6 +17,7 @@ function App() {
   const [isLooping, setIsLooping] = useState(false);
   const [isAudio, setIsAudio] = useState(false);
   const [currentFileName, setCurrentFileName] = useState(null);
+  const [mediaMetadata, setMediaMetadata] = useState(null);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -25,6 +26,38 @@ function App() {
 
   const videoRef = useRef(null);
   const containerRef = useRef(null);
+
+  // Handle media metadata changes
+  const handleMetadataChange = (metadata) => {
+    setMediaMetadata(metadata);
+  };
+
+  // Update page title based on media metadata
+  useEffect(() => {
+    if (mediaMetadata) {
+      const { title, artist, isAudio } = mediaMetadata;
+      let newTitle = title;
+      
+      if (artist) {
+        newTitle = `${title} - ${artist}`;
+      }
+      
+      // Add media type suffix
+      newTitle += ` - ${isAudio ? 'Audio' : 'Video'} Player`;
+      
+      document.title = newTitle;
+    } else {
+      // Reset to default title when no media is loaded
+      document.title = 'Desktop Custom Speed Media Player';
+    }
+  }, [mediaMetadata]);
+
+  // Reset metadata when no video is loaded
+  useEffect(() => {
+    if (!currentVideo) {
+      setMediaMetadata(null);
+    }
+  }, [currentVideo]);
 
   // Check for initial video path from command line arguments (Electron only)
   useEffect(() => {
@@ -323,6 +356,7 @@ function App() {
               isLooping={isLooping}
               isAudio={isAudio}
               fileName={currentFileName}
+              onMetadataChange={handleMetadataChange}
             />
           ) : (
             <Box
