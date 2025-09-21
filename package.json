@@ -10,7 +10,7 @@
     "start:react": "react-scripts start",
     "start:electron": "electron .",
     "dev": "node scripts/dev.js",
-    "build": "react-scripts build && node scripts/convert-icon.js && node scripts/copy-electron.js",
+    "build": "NODE_OPTIONS=\"--no-deprecation\" react-scripts build && node scripts/convert-icon.js && node scripts/copy-electron.js",
     "build:electron": "npm run build && electron-builder",
     "build:prod": "node scripts/build.js",
     "test": "react-scripts test",

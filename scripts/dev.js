@@ -3,7 +3,7 @@
 const { spawn } = require("child_process");
 const path = require("path");
 
-console.log("🚀 Starting Custom Speed Video Player in development mode...\n");
+console.log("🚀 Starting Desktop Custom Speed Media Player in development mode...\n");
 
 // Start React development server
 const reactProcess = spawn("npm", ["run", "start:react"], {

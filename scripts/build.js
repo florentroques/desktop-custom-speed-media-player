@@ -3,7 +3,7 @@
 const { execSync } = require('child_process');
 const path = require('path');
 
-console.log('🔨 Building Custom Speed Video Player for production...\n');
+console.log('🔨 Building Desktop Custom Speed Media Player for production...\n');
 
 try {
   // Build React application
